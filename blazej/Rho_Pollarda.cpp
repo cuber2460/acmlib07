@@ -1,0 +1,144 @@
+//sprawdzane recznie na kilku przykladach
+#include<cstdio>
+#include<algorithm>
+#include<vector>
+#include<cstring>
+#include<set>
+#include<assert.h>
+using namespace std;
+#define FOR(i,a,b) for(int i = a; i <= b; ++i)
+#define FORD(i,a,b) for(int i = a; i >= b; --i)
+#define REP(i,n) FOR(i,0,(n)-1)
+#define RI(i,n) FOR(i,1,n)
+#define pb push_back
+#define mp make_pair
+#define st first
+#define nd second
+#define mini(a,b) a=min(a,b)
+#define maxi(a,b) a=max(a,b)
+bool debug;
+typedef vector<int> vi;
+typedef long long ll;
+typedef long double ld;
+typedef pair<int,int> pii;
+const int inf = 1e9 + 5;
+const int nax = 1e6 + 5;
+
+//vector<ll> witness = {2, 7, 61}; // < 4759123141
+vector<ll> witness = {2, 325, 9375, 28178, 450775, 9780504, 1795265022}; // < 2^64
+
+ll mnoz(ll a, ll b, ll mod) {
+	return (__int128(a)*b)%mod;
+	
+	/*ll res = 0;
+	while (b) {
+		if (b&1) res = (res+a)%mod;
+		a = (a+a)%mod;
+		b /= 2;
+	}
+	return res;*/
+}
+
+ll pot(ll a, ll b, ll mod) {
+	ll res = 1;
+	while (b) {
+		if (b&1)
+			res = mnoz(res,a,mod);
+		a = mnoz(a,a,mod);
+		b /= 2;
+	}
+	return res;
+}
+
+bool test(ll n) {
+	if (n == 2)
+		return true;
+	if (n < 2 || n%2 == 0)
+		return false;
+	
+	ll d = n-1;
+	ll s = 0;
+	while (d%2 == 0) {
+		d /= 2;
+		++s;
+	}
+	
+	for (auto i: witness) if (i%n) {
+		ll x = pot(i,d,n);
+		if (x != 1) {
+			bool zlozona = true;
+			REP(j,s) {
+				if (x == n-1) {
+					zlozona = false;
+					break;
+				}
+				x = (x*x)%n;
+			}
+			if (zlozona)
+				return false;
+		}
+	}
+	
+	return true;
+}
+
+ll nwd(ll a, ll b) {
+	return a ? nwd(b%a,a) : b;
+}
+
+ll f(ll x, ll mod, ll c) {
+	ll y = mnoz(x,x,mod) + c;
+	if (y > mod)
+		y -= mod;
+	return y;
+}
+
+void rho(ll n, vector<ll> &v) {
+	if (n <= 1) return;
+	if (test(n)) {
+		v.pb(n);
+		return;
+	}
+	
+	ll c = 1;
+	while(true) {
+		ll x = 2, y = 2, d = 1;
+		while (d == 1) {
+			x = f(x,n,c);
+			y = f(f(y,n,c),n,c);
+			d = nwd(abs(x-y),n);
+		}
+		if (d < n) {
+			rho(d, v);
+			rho(n/d,v);
+			return;
+		}
+		++c;
+	}
+}
+
+void rozklad(ll n, vector<ll> &v) {
+	int BLOK = 100;
+	FOR(i,2,BLOK) while (n%i == 0) {
+		n /= i;
+		v.pb(i);
+	}
+	
+	rho(n,v);
+	sort(v.begin(),v.end());
+}
+
+int main(int argc, char * argv[]) {
+	debug = argc > 1;
+	while(true) {
+		ll x;
+		scanf("%lld",&x);
+	
+		vector<ll> v;
+		rozklad(x,v);
+		printf("rozklad %lld to:\n",x);
+		for (auto i: v) printf("%lld ",i); puts("");
+		break;
+	}
+	return 0;
+}
