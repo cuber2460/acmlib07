@@ -1,48 +1,7 @@
-#include <bits/stdc++.h>
-
-using namespace std;
-
-class Splay;
-
-int getId(Splay * s);
-void wypisz();
-
 struct Value
 {
-	int size;
-	int czarne;
-	bool color;
-	bool flop;
-
-	Value() : size(1), czarne(false), color(
-
-	void touch(Value * left, Value * right)
-	{
-		if(flop)
-		{
-			color = !color;
-			czarne = size - czarne;
-			flop = !flop;
-			if(left) left->flop = !left->flop;
-			if(right) right->flop = !right->flop;
-		}
-	}
-
-	void update(Value * left, Value * right)
-	{
-		size = 1;
-		czarne = color ? 1 : 0;
-		if(left)
-		{
-			size += left->size;
-			czarne += left->czarne;
-		}
-		if(right)
-		{
-			size += right->size;
-			czarne += right->czarne;
-		}
-	}
+	void touch(Value * left, Value * right) { }
+	void update(Value * left, Value * right) { }
 };
 
 struct Splay : Value
@@ -173,6 +132,7 @@ struct Splay : Value
 		}
 	}
 
+	/* Sprawia, że wierzchołek jest rootem w swoim drzewie. */
 	void makeRoot()
 	{
 		applyF([] (Splay * s) {
@@ -180,6 +140,8 @@ struct Splay : Value
 		});
 	}
 
+	/* Zakłada, że (*this) nie jest korzeniem drzewa.
+	 * Usuwa krawędź znajdującą się nad danym wierzchołkiem. */
 	void cut()
 	{
 		expose();
@@ -203,7 +165,9 @@ struct Splay : Value
 
 Splay * Splay::lastDisc;
 
-/* Wywołaj funkcję f na poddrzewie reprezentującym ścieżkę od a do b. */
+/* Wywołaj funkcję f na poddrzewie reprezentującym ścieżkę od a do b.
+ * UWAGA! zmienia korzeń drzewa.
+ * Jeśli jest to niepoążdane, po wywołaniu funkcji należy zrobić makeRoot() na starym roocie. */
 void applyF(Splay * a, Splay * b, std::function<void(Splay*)> f)
 {
 	a->makeRoot();
@@ -225,44 +189,4 @@ void deleteTree(Splay * t)
 	if(t->l) deleteTree(t->l);
 	if(t->r) deleteTree(t->r);
 	delete t;
-}
-
-int n;
-Splay * tab[100005];
-map<long, int> ids;
-
-int getId(Splay * s)
-{
-	return ids[(long) s];
-}
-
-void wypisz()
-{
-}
-
-vector<int> graf[100005];
-
-int dfs(int w, int o)
-{
-	for(int i : graf[w])
-		if(i != o)
-			dfs(i, w);
-	if(o) tab[w]->link(tab[o]);
-}
-
-int main()
-{
-	int n;
-	scanf("%d", &n);
-	for(int i = 1; i <= n; i++)
-		tab[i] = newTree();
-	for(int i = 1; i < n; i++)
-	{
-		int a, b;
-		scanf("%d%d", &a, &b);
-		graf[a].emplace_back(b);
-		graf[b].emplace_back(a);
-	}
-	dfs(1, 0);
-	return 0;
 }
