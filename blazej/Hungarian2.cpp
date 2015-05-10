@@ -1,30 +1,3 @@
-//sprawdzone:
-//	http://main.edu.pl/pl/archive/pa/2012/ren 0.28s/25s
-//	http://community.topcoder.com/stat?c=problem_statement&pm=7726&rd=10787
-//	http://community.topcoder.com/stat?c=problem_statement&pm=8143&rd=10789
-
-#include<cstdio>
-#include<algorithm>
-#include<vector>
-#include<cstring>
-#include<set>
-#include<assert.h>
-using namespace std;
-#define FOR(i,a,b) for(int i = a; i <= b; ++i)
-#define FORD(i,a,b) for(int i = a; i >= b; --i)
-#define REP(i,n) FOR(i,0,(n)-1)
-#define RI(i,n) FOR(i,1,n)
-#define pb push_back
-#define mp make_pair
-#define st first
-#define nd second
-#define mini(a,b) a=min(a,b)
-#define maxi(a,b) a=max(a,b)
-bool debug;
-typedef vector<int> vi;
-typedef long long ll;
-typedef long double ld;
-typedef pair<int,int> pii;
 const int inf = 1e9 + 5;
 const int nax = 607;
 

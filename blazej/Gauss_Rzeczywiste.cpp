@@ -1,29 +1,4 @@
-#include <cstdio>
-#include <vector>
-#include <queue>
-#include <stack>
-#include <cstring>
-#include <iostream>
-#include <algorithm>
-#include <set>
 #define MAXN 5007
-#define INF
-#define PB push_back
-#define MP make_pair
-#define ST first
-#define ND second
-
-#define REP(i,n) for(int i=0;i<(n);i++)
-#define FOR(a,b,c) for(int a=b;a<=(c);a++)
-#define FORD(a,b,c) for (int a=b;a>=(c);a--)
-#define VAR(v,n) __typeof(n) v=(n)
-#define ALL(c) c.begin(),c.end()
-#define FOREACH(i,c) for(VAR(i,(c).begin());i!=(c).end();i++)
-
-using namespace std;
-
-typedef long long LL;  
-typedef long double LD;
 
 const LD EPS = 1e-6;
 int n;

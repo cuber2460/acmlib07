@@ -1,33 +1,5 @@
-#include<cstdio>
-#include<algorithm>
-#include<vector>
-#include<cstring>
-#include<set>
-#include<queue>
-#include<assert.h>
-using namespace std;
-#define FOR(i,a,b) for(int i = a; i <= b; ++i)
-#define FORD(i,a,b) for(int i = a; i >= b; --i)
-#define REP(i,n) FOR(i,0,(n)-1)
-#define RI(i,n) FOR(i,1,n)
-#define pb push_back
-#define mp make_pair
-#define st first
-#define nd second
-#define mini(a,b) a=min(a,b)
-#define maxi(a,b) a=max(a,b)
-bool debug;
-typedef vector<int> vi;
-typedef long long ll;
-typedef long double ld;
-typedef pair<int,int> pii;
 const int inf = 1e9 + 5;
 const int nax = 6405;
-
-//sprawdzone:
-//	http://main.edu.pl/pl/archive/pa/2012/ren 4.5s/25s
-//	http://codeforces.com/contest/321/problem/B 0.06/2s
-//	http://codeforces.com/problemset/problem/277/E 1s/5s
 
 //c - capacity, v - value
 //wierzcholki sa od 0 do n, wszystko na intach 
@@ -87,8 +59,11 @@ namespace MinCost{
 				
 				//bylo[x] = true;
 				int dl = v[x].size();
-				REP(i,dl) if (v[x][i].c > 0 && odl[v[x][i].w] > odl[x] + pot[x] - pot[v[x][i].w] + v[x][i].v) {
-					odl[v[x][i].w] = odl[x] + pot[x] - pot[v[x][i].w] + v[x][i].v;
+				REP(i,dl) if (v[x][i].c > 0 && 
+					odl[v[x][i].w] > 
+						odl[x] + pot[x] - pot[v[x][i].w] + v[x][i].v) {
+					odl[v[x][i].w] = 
+						odl[x] + pot[x] - pot[v[x][i].w] + v[x][i].v;
 					if (!bylo[v[x][i].w]) {
 						kolej.push(v[x][i].w);
 						bylo[v[x][i].w] = true;
