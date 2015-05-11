@@ -5,16 +5,15 @@ struct NegCycle{
     const T EPS = 1e-18;
 
     struct edge{
-        int from, to,id; 
-        T cost;
-        edge(int _from, int _to, int _id, T _cost): from(_from), to(_to),id(_id), cost(_cost){}
+        int from, to,id; T cost;
+        edge(int _from, int _to, int _id, T _cost): 
+      from(_from), to(_to),id(_id), cost(_cost){}
     };
 
     int n;
     vector<edge> E;
     T dist[N];
     int from[N], vis[N];
-
     NegCycle(int _n): n(_n), E() {}
 
     // Krawedz od f do t o koszcie cost i identyfikatorze id
@@ -23,7 +22,7 @@ struct NegCycle{
     }
 
     // Sprawdza czy w grafie istnieje ujemny cykl osiagalny z wierzcholka start.
-    // Jesli takowy cykl istnieje, to funkcja zwraca go w postaci wektora identyfikatorów krawędzi
+    // Jesli istnieje, to zwraca go w postaci wektora identyfikatorów krawędzi
     // Pusty wektor oznacza brak ujemnego cyklu. Zlozonosc O(nm). 
     // Jesli chcemy sprawdzic czy istnieje cykl o wadze <= 0, to zmieniamy wage
     // w na (n+1)*w-1 i sprawdzamy czy w grafie istnieje cykl o wadze ujemnej 
