@@ -1,0 +1,78 @@
+import code_parser
+import os
+import sys
+
+options = {
+  'number_of_columns': 2,
+  'characters_in_a_row': 80,
+  'expandtab': 2,
+  'width': 297,
+  'height': 210,
+  'margin_top': 8,
+  'margin_bottom': 11,
+  'margin_left': 8,
+  'margin_middle': 4,
+  'margin_right': 8,
+
+  'header_decorations': {
+    'is_bold': True,
+    'color': (0, 0, 0),
+    'bg_color': (0, 1, 0, 0.5),
+    'border_color': (0, 0, 0),
+  },
+
+  'right_wrap_decorations': {
+    'is_bold': True,
+    'color': (1, 1, 1),
+    'bg_color': (1, 0, 0),
+  },
+
+  'left_wrap_decorations': {
+    'is_bold': True,
+    'color': (1, 1, 1),
+    'bg_color': (0, 0, 1),
+  },
+
+  'page_number_decorations': {
+    'is_italic': True,
+    'color': (0, 0, 0),
+  },
+
+  'date_decorations': {
+    'is_italic': True,
+    'color': (0, 0, 0),
+  },
+}
+
+def CheckFileType(filename):
+  if filename.endswith('.cpp'):
+    return (filename, 'C++', 'default')
+  else:
+    return ()
+
+def FindAllSourceCode(code_dir):
+  sources = []
+  for (dirpath, dirnames, filenames) in os.walk(code_dir):
+    for filename in filenames:
+      path = os.path.join(dirpath, filename)
+      file_type = CheckFileType(path)
+      if file_type:
+        sources.append(file_type)
+  return sources
+
+if len(sys.argv) != 3:
+  print("Usage: {} code_dir/ output.pdf".format(sys.argv[0]))
+  sys.exit(1)
+
+options['code_dir'] = sys.argv[1]
+options['output_pdf'] = sys.argv[2]
+
+cp = code_parser.CodeParser(options)
+
+for filename, lang, style in FindAllSourceCode(options['code_dir']):
+  new_options = dict(options)
+  new_options['lang'] = lang
+  new_options['style'] = style
+  cp.AddCodeFile(filename, new_options)
+
+cp.GeneratePdf(options)
