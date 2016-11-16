@@ -2,6 +2,8 @@ BIN = bin
 PDF = lib.pdf
 CODE_DIR = code
 
+CODE_DIR_FILES = $(shell find code -type f)
+
 INFO = $(BIN)/lib.info
 TMP_PDF = $(BIN)/tmp_lib.pdf
 TMP_INFO = $(BIN)/tmp_lib.info
@@ -10,7 +12,7 @@ DATE = $(BIN)/date
 $(PDF): $(TMP_PDF) $(INFO)
 	pdftk $(TMP_PDF) update_info $(INFO) output $@
 
-$(TMP_PDF): | $(BIN)
+$(TMP_PDF): $(CODE_DIR_FILES) | $(BIN)
 	python3 builder.py $(CODE_DIR) $(TMP_PDF)
 
 $(INFO): $(TMP_INFO) $(DATE)
