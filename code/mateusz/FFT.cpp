@@ -14,27 +14,23 @@ struct fft_double {
   double PI = 3.141592653589793;
   using Complex = complex<double>;
 
-  // TODO(Mateusz): Po co pisać, że potrzebne? To chyba powinno być domyślne.
-  vector<Complex> dftn;  // Potrzebne.
-  vector<Complex> dfts;  // Potrzebne.
+  vector<Complex> dftn;
+  vector<Complex> dfts;
 
-  // TODO(Mateusz): Do zwykłego czego?  Jest trochę miejsca wolnego w tej linii
-  // na komentarz, to można śmiało się rozpisać.
-  vector<Complex> pom;  // Do zwykłego.
+  vector<Complex> pom;
 
-  vector<Complex> a1;  // Do dokładnego.
-  vector<Complex> a2;  // Do dokładnego.
-  vector<Complex> b1;  // Do dokładnego.
-  vector<Complex> b2;  // Do dokładnego.
+  vector<Complex> a1;
+  vector<Complex> a2;
+  vector<Complex> b1;
+  vector<Complex> b2;
 
-  vector<double> cosi;  // Potrzebne.
-  vector<Complex> omega;  // Potrzebne.
+  vector<double> cosi;
+  vector<Complex> omega;
 
   fft_double() {}
 
   // @n to maksymalna suma rozmiarów mnożonych wielomianów.
-  // TODO(Mateusz): @chce_dokladne to nie powinien być bool?
-  fft_double(int n, int chce_dokladne) {
+  fft_double(int n, bool chce_dokladne) {
     n = potenga(n);
     dftn.resize(n + 1, 0);
     dfts.resize(n + 1, 0);
@@ -49,18 +45,13 @@ struct fft_double {
     omega.resize(n + 1, 0);
   }
 
-  // TODO(Mateusz): Pisać normalne słowa, nie "potenga".
   inline int potenga(int v) {
-    // TODO(Mateusz): Nie pisać "<<=", jeśli to jest mnożenie przez 2.
-    // TODO(Mateusz): Nie pisać "1" zamiast "true".
-    // TODO(Mateusz): W pętli "for" można ewentualnie zostawić pustą środkową
-    // część.  Wtedy to jest równoważne "true" lub "1".
-    for (int i = 1; 1; i <<= 1) {
+    for (int i = 1; ; i *= 2) {
       if (i >= v) {
         return i;
       }
     }
-    // TODO(Mateusz): Dopisać tutaj "abort();  // Unreachable code.".
+    assert(false);
   }
 
   inline void dft(int n, int kier) {
@@ -68,16 +59,12 @@ struct fft_double {
     int s = 0;
     int p;
     int g;
-    // TODO(Mateusz): Jeśli "<<=" logicznie ma odpowiadać mnożeniu przez 2,
-    // to nie należy tak pisać.
-    for (int i = 2; i <= n; i <<= 1) {
+    for (int i = 2; i <= n; i *= 2) {
       dftn.swap(dfts);
       p = n / i;
       if (kier) {
         g = 0;
         for (int j = 0; j < n; j++) {
-          // TODO(Mateusz): To wyrażenie jest zbyt skomplikowane, powinno być
-          // rozbite na kilka części.  Prościej wtedy czytać (i przepisywać!).
           dftn[j] = dfts[(2 * (j - s) + s) & n2] +
                     omega[g] * dfts[(2 * (j - s) + p + s) & n2];
           s++;
@@ -89,9 +76,6 @@ struct fft_double {
       } else {
         g = n;
         for (int j = 0; j < n; j++) {
-          // TODO(Mateusz): Jak się pisze kod na kontestach, to można zrobić
-          // copy-paste, żeby zaoszczędzić czas.  Ale jak się robi biblioteczkę
-          // to trzeba się postarać, żeby kopii nie było!
           dftn[j] = dfts[(2 * (j - s) + s) & n2] +
                     omega[g] * dfts[(2 * (j - s) + p + s) & n2];
           s++;
@@ -141,7 +125,7 @@ struct fft_double {
   vector<int> fft_dokladne(vector<int> &jed, vector<int> &dwa) {
     int n1 = potenga(jed.size() + dwa.size());
     licz_omegi(n1);
-    // TODO(Mateusz): Co to za stała?
+    //stała, która rozbija liczbę K na A*M+B
     long long M = 32000;
     for (int i = 0; i < jed.size(); i++)
       dftn[i] = jed[i] / M;
@@ -150,7 +134,6 @@ struct fft_double {
     dft(n1, 1);
     for (int i = 0; i < n1; i++)
       a1[i] = dftn[i];
-
     for (int i = 0; i < jed.size(); i++)
       dftn[i] = jed[i] % M;
     for (int i = (int) jed.size(); i < n1; i++)

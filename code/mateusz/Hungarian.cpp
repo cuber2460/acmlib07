@@ -5,14 +5,9 @@
 /* z czym skojarzone.                                                         */
 /* Jak chcemy najtańsze to bierzemy wszystko z minusem, jak gdzieś nie ma     */
 /* krawędzi to dajemy -INF, przy zalozeniu, ze: n * |waga| < INF.             */
+/* Wszystko w wektorze indeksujemy od 0.                                      */
 
-// TODO(Mateusz): Opisać dokładnie wejście i wyjśce: Rozmiary tablic, indeksy
-// od których się rzeczy zaczynają.
-// TODO(Mateusz): Zrobić template po typie wag oraz po znaku (oznaczającym,
-// czy chce się maksimum czy minimum).
 vector<int> hungarian(const vector<vector<int>>& w, int n) {
-  // TODO(Mateusz): Nie rób takich tablic na stosie!  Potem się okaże, że na
-  // jakimś konkursie jest limit na stos i to się wywali.
   int lx[n], ly[n], skojx[n], skojy[n];
   int markx[n], marky[n], slack[n], par[n], q[n];
   for (int i = 0; i < n; i++) {
@@ -41,8 +36,6 @@ vector<int> hungarian(const vector<vector<int>>& w, int n) {
                 q[qe++] = skojy[j];
               } else {
                 v=j;
-                // TODO(Mateusz): Ten kod jest zbyt skomplikowany,
-                // żeby robić goto!
                 goto koniec;
               }
             }

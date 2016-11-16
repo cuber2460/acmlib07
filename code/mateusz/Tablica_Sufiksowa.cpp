@@ -1,19 +1,16 @@
 /* TABLICA SUFIKSOWA O(n*log(n)) i O(n*log^2(n)).                             */
 /* Sortuje leksykograficznie wszystke sufiksy słowa.                          */
 /* Dodatkowo liczy pomocnicze tablice rank i lcp.                             */
-// TODO(Mateusz): Dodać opis czym są te tablice, jak są indeksowane, jak się
-// używa tego kodu, itd.
+/* Wszystko indeksujemy od 1, ale podajemy wskaźnik na 0                      */
 
-// TODO(Mateusz): Zrobić z tego template po typie znaków słowa.
 struct suffix_array {
   vector<pair<pair<int,int>, int>> wek;  // do log^2
   vector<vector<int>> radix1;  // do log
   vector<vector<int>> radix2;  // do log
   vector<int> dru;  // do log
   vector<pair<int,int>> ska;  // do log
-
-  // TODO(Mateusz): Opisać co się tutaj konstruuje.
-  // Czemu słowo nie jest podawane?
+  
+  //n to limit na długość słowa
   suffix_array(int n) {
     wek.resize(n + 1, make_pair(make_pair(-1, -1), -1));
     radix1.resize(n + 1);
