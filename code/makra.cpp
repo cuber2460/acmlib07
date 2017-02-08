@@ -29,11 +29,11 @@ sim dor(rge<c> d) {
 sim dor(const c&) { ris; }
 #endif
 };
-#define imie(x) " [" << #x ": " << (x) << "] "
+#define imie(...) " [" << #__VA_ARGS__ ": " << (__VA_ARGS__) << "] "
 
 int main() {
   int a = 81281;
   set<int> b{3, 5, 7};
-  debug() << imie(a) << imie(b) << vector<int>();
+  debug() << imie(a) << imie(b) << imie(vector<int>{1, 2, 3}) << 10;
   return 0;
 }
