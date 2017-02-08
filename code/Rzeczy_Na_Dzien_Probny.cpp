@@ -1,7 +1,3 @@
-#include <bits/stdc++.h>
-
-using namespace std;
-
 // 1. Sprawdzić int128.
 // Oczekiwany output: 61231558446921906466935685523974676212.
 int Main() {
