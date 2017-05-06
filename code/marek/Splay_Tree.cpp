@@ -1,327 +1,198 @@
-typedef int Key; /* Potrzebuje operatora < */
-const bool SplayMulti = true; /* Czy równe klucze mogą być na drzewie? */
+struct N {
+  int c[3] = {0 /* Left */, 0 /* Right */, 0 /* Parent */};
+  N() = default;  // The node must be default constructible.
 
-struct Value
-{
-	void touch(Value * left, Value * right) { }
-	void update(Value * left, Value * right) { }
+  // User data.
+  int key;
+  N(int key) : key(key) {}
+  void Touch(N* left, N* right)  {}
+  // Update must leave the node in a state that doesn't require a "Touch".
+  void Update(N* left, N* right) {}
+
+  // Called instead of a destructor.  Should free any resource associated with
+  // only this node.  Usually empty function is enough.
+  void Clear() {}
 };
 
-struct Splay : Value
-{
-	Key key;
-	Splay *l, *r, *p;
-	int size; /* SIZE */
+#define C(v, x)   d[(v) - 1].c[x]
+#define P(v)      d[(v) - 1].c[2]
+#define X(v)      (C(P(v), 1) == v)
 
-	template<typename ...Args>
-	Splay(const Key & key, const Args & ...args)
-		: Value(args...) ,key(key)
-		,l(nullptr) ,r(nullptr) ,p(nullptr)
-		,size(1) /* SIZE */
-	{
-	}
+vector<N> d;     // Vector of all nodes (data).
+vector<int> fd;  // Vector of indices of nodes that were freed.
 
-	static bool comp(const Key & a, const Key & b)
-	{
-		return a < b;
-	}
-};
-
-/* Splay allocator */
-//Splay allo[200005]; int used_allo = 0; /* FIXED SIZE */
-template<typename ...Args>
-Splay * newSplay(const Key & key, const Args & ...args)
-{
-	return new Splay(key, args...); /* DYNAMIC ALLOCATION */
-	//return &(allo[used_allo++] = Splay(key, args...));
+template <typename ...A>
+int New(A&& ...a) {
+  if (fd.empty()) {
+    d.emplace_back(forward<A>(a)...);
+    return d.size();
+  }
+  const int i = fd.back();
+  fd.pop_back();
+  d[i - 1] = N(forward<A>(a)...);
+  return i;
 }
 
-/* Splay deallocator */
-void deleteSplay(Splay * p)
-{
-	delete p;
+void ReserveAtLeast(int n) {
+  const int shortage = n - (int) fd.size();
+  if (shortage > 0) {
+    for (int i = 1; i <= shortage; i++) fd.push_back(d.size() + i);
+    d.resize(d.size() + shortage);
+  }
 }
 
-void touch(Splay * n)
-{
-	if(!n) return;
+void Delete(int v) { d[v - 1].Clear(); fd.push_back(v); }
+void ClearAll()    { d.clear(); fd.clear(); }
+
+ N*    Get(int v) { return v ? &d[v - 1] : nullptr; }
+int  Touch(int v) { if (v) d[v - 1].Touch (Get(C(v, 0)), Get(C(v, 1))); return v; }
+int Update(int v) { if (v) d[v - 1].Update(Get(C(v, 0)), Get(C(v, 1))); return v; }
+
+// Rotates the edge above node @v.  Assumes that @v has a parent, that all
+// nodes above (and including) @v are touched, and that all direct children
+// of the path from @v to root are touched and updated.
+void Rotate(int v) {
+  const int p = P(v);
+  const int x = X(v);
+  if (P(v) = P(p)) C(P(p), X(p)) = v;
+  if (C(p, x) = C(v, x ^ 1)) P(C(p, x)) = p;
+  P(C(v, x ^ 1) = p) = v;
+  Update(p);
 }
 
-void update(Splay * n)
-{
-	if(!n) return;
-	n->update(n->l, n->r);
-	n->size = 1; /* SIZE */
-	if(n->l) n->size += n->l->size; /* SIZE */
-	if(n->r) n->size += n->r->size; /* SIZE */
+// Moves @v to the root.
+void Splay(int v) {
+  if (!v) return;
+  Touch(C(v, 0));
+  Touch(C(v, 1));
+  while (P(v)) {
+    const int p = P(v);
+    Touch(C(p, X(v) ^ 1));
+    if (P(p)) {
+      Touch(C(P(p), X(p) ^ 1));
+      Rotate(X(v) == X(p) ? p : v);
+    }
+    Rotate(v);
+  }
+  Update(v);
 }
 
-/* Tworzy krawędź p->s, left określa, czy jest to prawa, czy lewa krawędź */
-void connect(Splay * p, Splay * s, bool left)
-{
-	(left ? p->l : p->r) = s;
-	if(s) s->p = p;
+// Sets the next node as a root (in direction @x: 0 - left, 1 - right).
+// If @v is the last node, does nothing and returns false.
+bool Next(int& v, int x = 1) {
+  if (!v or !C(Touch(v), x)) return false;
+  v = C(v, x);
+  while (C(Touch(v), x ^ 1)) v = C(v, x ^ 1);
+  Splay(v);
+  return true;
 }
 
-/* Wykonuje rotację względem wierzchołka p (zakłada, że p ma ojca) */
-void rotate(Splay * p)
-{
-	Splay * q = p->p;
-	Splay * r = q->p;
-	bool left = (p == q->l);
-	touch(left ? q->r : q->l);
-	connect(q, left ? p->r : p->l, left);
-	connect(p, q, !left);
-	if(r) connect(r, p, (r->l == q));
-	else p->p = nullptr;
-	update(q);
+// Sets the first (or last when x = 1) node as a root.
+void First(int& v, int x = 0) {
+  while (C(Touch(v), x)) v = C(v, x);
+  Splay(v);
 }
 
-/* Przenosi element p do korzenia */
-void splay(Splay * p)
-{
-	touch(p->l);
-	touch(p->r);
-	while(p->p)
-	{
-		Splay * q = p->p;
-		Splay * r = q->p;
-		touch((q->l == p) ? q->r : q->l);
-		if(r) rotate(((q->l == p) == (r->l == q)) ? q : p);
-		rotate(p);
-	}
-	update(p);
+// Joins trees @l and @r into a single tree.
+// Assumes that max(l) < min(l).
+int Join(int l, int r) {
+  if (!l or !r) return Touch(l + r);
+  First(r);
+  C(P(Touch(l)) = r, 0) = l;
+  return Update(r);
 }
 
-/* Zwraca splay, w którego korzeniu znajduje się element następujący po korzeniu drzewa p
- * Jeśli taki element nie istnieje, zwraca nullptr */
-Splay * snext(Splay * p)
-{
-	if(!p || !p->r) return nullptr;
-	p = p->r;
-	while(p->l) p = p->l;
-	splay(p);
-	return p;
+// Splits the tree into two parts: left: (-oo, root), [root, +oo).
+pair<int, int> Split(int v) {
+  if (!v) return {0, 0};
+  const int l = C(Touch(v), 0);
+  if (!l) return {0, v};
+  C(v, 0) = P(l) = 0;
+  Touch(C(v, 1));
+  return {l, Update(v)};
 }
 
-/* Zwraca splay, w którego korzeniu znajduje się element poprzedziający korzeń drzewa p
- * Jeśli taki element nie istnieje, zwraca nullptr */
-Splay * sprev(Splay * p)
-{
-	if(!p || !p->l) return nullptr;
-	p = p->l;
-	while(p->r) p = p->r;
-	splay(p);
-	return p;
+// Deletes the root node, if the tree is not empty.
+void DeleteRoot(int& v) {
+  if (!Touch(v)) return;
+  if (C(v, 0)) P(C(v, 0)) = 0;
+  if (C(v, 1)) P(C(v, 1)) = 0;
+  const int result = Join(C(v, 0), C(v, 1));
+  Delete(v);
+  v = result;
 }
 
-/* Zwraca następny wierzchołek, nie zmieniając korzenia.
- * Jeśli taki element nie istnieje, zwraca nullptr */
-Splay * getnext(Splay * p)
-{
-	if(!p) return nullptr;
-	Splay * s = snext(p);
-	splay(p);
-	return s;
+// Deletes the whole tree.  @v should no longer be used as a tree.
+// NOT TESTED!
+void DeleteTree(int v) {
+ int tmp = v;
+  while (v = tmp) {
+    if (tmp = C(v, 0)) C(v, 0) = 0;
+    else if (tmp = C(v, 1)) C(v, 1) = 0;
+    else tmp = P(v), Delete(v);
+  }
 }
 
-/* Zwraca poprzedni wierzchołek, nie zmieniając korzenia.
- * Jeśli taki element nie istnieje, zwraca nullptr */
-Splay * getprev(Splay * p)
-{
-	if(!p) return nullptr;
-	Splay * s = sprev(p);
-	splay(p);
-	return s;
+// This function traveses the tree without splaying.  For each node on the path,
+// function @f is called.  If it returns 0, the current node is returned.
+// On -1, the left subtree is visited, on 1 the right subtree is visited.
+// @p is set to the parent of the last visisted node.
+// @v points to the variable that holds the last visited node.
+// Nothing is splayed, so its neccessary to call Splay on v afterwards.
+// F :: N* -> {-1, 0, 1}
+// This function operates on pointers, so note that after calling @New(),
+// results returned by this function become invalid.
+template <typename F>
+void GoDown(int*& v, int& p, F f) {
+  p = 0;
+  int tmp;
+  while (Touch(*v) and (tmp = f(*Get(*v)))) {
+    v = &C(p = *v, tmp > 0);
+  }
 }
 
-/* Znajduje najmniejszy element na drzewie i umieszcza go w korzeniu */
-Splay * find_first(Splay * p)
-{
-	Splay * q = nullptr;
-	while(p)
-	{
-		touch(q = p);
-		p = p->l;
-	}
-	if(q) splay(q);
-	return q;
+// -------------------------------------------------------------------------- //
+// ----------------------------- User functions ----------------------------- //
+// -------------------------------------------------------------------------- //
+
+#define Cmp(x) [x](N& n) -> int {                \
+                 if (x == n.key) return 0;       \
+                 else if (x < n.key) return -1;  \
+                 else return 1;                  \
+               }
+
+N& FindOrCreate(int& v, int key) {
+  ReserveAtLeast(1);
+  int p, *vptr = &v;
+  GoDown(vptr, p, Cmp(key));
+  if (!*vptr) P(*vptr = New(key)) = p;
+  Splay(v = *vptr);
+  return *S::Get(v);
 }
 
-/* Znajduje największy element na drzewie i umieszcza go w korzeniu */
-Splay * find_last(Splay * p)
-{
-	Splay * q = nullptr;
-	while(p)
-	{
-		touch(q = p);
-		p = p->r;
-	}
-	if(q) splay(q);
-	return q;
+// (-oo, a), [a, +oo).
+pair<int, int> SplitByKey(int v, int a) {
+  if (!v) return {0, 0};
+  int p, *vptr = &v;
+  GoDown(vptr, p, Cmp(a));
+  if ((v = *vptr) or Get(v = p)->key > a) {
+    Splay(v);
+    return Split(v);
+  }
+  Splay(p);
+  if (Next(p)) return Split(p);
+  return {p, 0};
 }
 
-/* Przenosi do korzenia element o kluczu key.
- * Jeśli taki nie istnieje, przenosci któregoś z sąsiadów (nie wiadomo, którego) */
-Splay * find(Splay * p, const Key & key)
-{
-	Splay * q = nullptr;
-	while(p)
-	{
-		touch(q = p);
-		if(Splay::comp(key, p->key)) p = p->l;
-		else if(Splay::comp(p->key, key)) p = p->r;
-		else break;
-	}
-	if(q) splay(q);
-	return q;
-}
-
-/* Łączy dwa drzewa l i r w jedno drzewo.
- * Zakłada, że największa wartość w drzewie l <= najmniejsza wartosć w drzewie r */
-Splay * join(Splay * l, Splay * r)
-{
-	if(!r) return l;
-	r = find_first(r);
-	touch(l);
-	touch(r);
-	connect(r, l, true);
-	update(r);
-	return r;
-}
-
-/* Rozdziela drzewo p na dwa poddrzewa:
- * left:  (-oo, key)
- * right: [key, +oo)
- */
-void split(Splay * p, const Key & key, Splay * & left, Splay * & right)
-{
-	if(!p) { left = right = nullptr; return; }
-	p = find(p, key);
-	bool brig = Splay::comp(p->key, key);
-	left = brig ? p : p->l;
-	right = brig ? p->r : p;
-	(brig ? p->r : p->l) = nullptr;
-	if(left) left->p = nullptr;
-	if(right) right->p = nullptr;
-	update(p);
-}
-
-/* Dodaje element (key, args...) do drzewa i umieszcza go w korzeniu.
- * Jeśli SplayMulti == false (czyli powtórzone klucze są niedopuszczone), a key znajduje się na drzewie,
- *   to ten element zostanie nadpisany (zarówno key jak i args...).
- * Jeśli SplayMulti == true, to element zostanie dorzucony przed inne elementy o tym samym kluczu. */
-template<typename ...Args>
-Splay * insert(Splay * p, const Key & key, const Args & ...args)
-{
-	Splay *left, *right;
-	split(p, key, left, right);
-	if(!SplayMulti && (right = find_first(right)) && !Splay::comp(key, right->key))
-	{
-		touch(right);
-		Splay * l = right->l;
-		Splay * r = right->r;
-		*right = Splay(key, args...);
-		connect(right, l, true);
-		connect(right, r, false);
-		touch(right->l);
-		touch(right->r);
-		update(right);
-		return find(join(left, right), key);
-	}
-	Splay * s = newSplay(key, args...);
-	connect(s, left, true);
-	connect(s, right, false);
-	touch(left);
-	touch(right);
-	update(s);
-	return s;
-}
-
-/* Usuwa korzeń drzewa p i zwraca korzeń nowego drzewa. */
-Splay * erase(Splay * p)
-{
-	assert(p != nullptr);
-	splay(p);
-	if(p->l) p->l->p = nullptr;
-	if(p->r) p->r->p = nullptr;
-	return join(p->l, p->r);
-}
-
-/* Usuwa _jeden_ element o kluczu key z drzewa (lub zero jeśli takich elementów nie ma)
- * Jeśli er != nullptr, to zapisana tam będzie informacja, czy jakiś element został usunięty */
-Splay * erase(Splay * p, const Key & key, bool * er = nullptr)
-{
-	if(er) *er = false; /* ER */
-	Splay *left, *right;
-	split(p, key, left, right);
-	right = find_first(right);
-	if(right && !Splay::comp(key, right->key))
-	{
-		Splay * r = right->r;
-		if(r) r->p = nullptr;
-		deleteSplay(right);
-		if(er) *er = true; /* ER */
-		right = r;
-	}
-	return join(left, right);
-}
-
-/* Usuwa wszystkie elementy o kluczu key z drzewa
- * Jeśli SplayMulti == false, to funkcja jest równoważna funkcji erase.
- * Jeśli cnt != nullptr, to zapisana tam będzie informacja ile elementów zostało usuniętych. */
-Splay * eraseAll(Splay * p, const Key & key, int * cnt = nullptr)
-{
-	if(cnt) *cnt = 0; /* CNT */
-	bool x;
-	do
-	{
-		p = erase(p, key, &x);
-		if(cnt) (*cnt)++; /* CNT */
-	}
-	while(x);
-	return p;
-}
-
-/* SIZE */
-/* Przesuń k-ty element do korzenia.
- * Jeśli na drzewie nie ma aż k elementów, to przenieś ostatni. */
-Splay * find_kth(Splay * p, int k) // k indeksowane od 0
-{
-	Splay * q = nullptr;
-	touch(p);
-	while(p)
-	{
-		q = p;
-		touch(p->l); touch(p->r);
-		if(p->l && k < p->l->size) p = p->l;
-		else if((k -= ((p->l) ? p->l->size : 0) + 1) == -1) break;
-		else p = p->r;
-	}
-	if(q) splay(q);
-	return q;
-}
-
-/* Jeśli istnieje element o kluczu key, to przenosi go do korzenia
- * Jeśli taki element nie istnieje, to go tworzy i przenosi do korzenia */
-template<typename ...Args>
-Splay * find_or_create(Splay * p, const Key & key, const Args & ...args)
-{
-	p = find(p, key);
-	if(!p || Splay::comp(key, p->key) || Splay::comp(p->key, key))
-		return insert(p, key, args...);
-	return p;
-}
-
-/* Wycina poddrzewo reprezentujące przedział [a, b) i wywołuje na nim funkcję f.
- * Funkcja f może dowolnie zmodyfikować dane jej poddrzewo (oby tylko klucze nie uciekły poza przedział [a, b)),
- *   a następnie zwrócić wskaźnik na nowe poddrzewo.
- * Na koniec całe drzewo jest z powrotem sklejane. */
-Splay * get_range(Splay * p, const Key & a, const Key & b, std::function<Splay*(Splay*)> f)
-{
-	Splay *left, *middle, *right;
-	split(p, a, left, middle);
-	split(middle, b, middle, right);
-	touch(middle);
-	return join(left, join(f(middle), right));
+// [a, b].
+// F :: int& -> Return (if it wants to change the subtree)
+// F :: int  -> Return (if it doesn't want to change the subtree)
+template <typename F>
+auto RangeF(int& v, int a, int b, F f) -> decltype(f(a)) {
+  auto lm = SplitByKey(v, a);
+  auto mr = SplitByKey(lm.second, b + 1);
+  auto l = [&]() { v = Join(lm.first, Join(mr.first, mr.second)); };
+  using Y = decltype(l);
+  struct Z { Z(Y y) : y(y) {} ~Z() { y(); } Y y; } z(l);
+  return f(mr.first);
 }
