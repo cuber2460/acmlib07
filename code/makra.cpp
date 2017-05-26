@@ -29,7 +29,7 @@ sim dor(rge<c> d) {
 sim dor(const c&) { ris; }
 #endif
 };
-#define imie(x...) " [" << #x ": " << (x) << "] "
+#define imie(x...) " [" #x ": " << (x) << "] "
 
 int main() {
   int a = 81281;
