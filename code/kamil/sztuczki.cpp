@@ -5,6 +5,16 @@ while(clock()<=69*CLOCKS_PER_SEC)
 int tab_[nax * 2 + 1];
 #define tab (tab_ + nax)
 
+// tablica o indeksach [-nax, nax][-nax, nax][-nax, nax]
+int tab_[nax * 2 + 1][nax * 2 + 1][nax * 2 + 1];
+struct {
+  struct A {
+    int x;
+    int* operator[](int y) { return tab_[x + nax][y + nax] + nax; }
+  };
+  A operator[](int x) { return {x}; }
+} tab;
+
 // wygodne wypisywanie structa
 debug & operator << (debug & dd, P p) {
 	dd << "(" << p.x << ", " << p.y << ") "; // lub: p.print()
