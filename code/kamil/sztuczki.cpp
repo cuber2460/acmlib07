@@ -1,3 +1,6 @@
+// sprawdzanie czasu
+while(clock()<=69*CLOCKS_PER_SEC)
+
 // tablica o indeksach [-nax, nax]
 int tab_[nax * 2 + 1];
 #define tab (tab_ + nax)
