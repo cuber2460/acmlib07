@@ -1,3 +1,4 @@
+// about 2-3 times faster than std::sort() for N >= 1e6
 void fast_sort(vector<unsigned> & t) {
 	int n = t.size(), k = 1 << 16; // t[i] < k * k
 	auto tmp = t; // if array: static int/unsigned tmp[nax];
