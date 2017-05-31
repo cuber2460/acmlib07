@@ -2,118 +2,122 @@
 #include <cstdlib>
 #include <iostream>
 #include <iomanip>
-#include <string>
-#include <ctime>
-#include <cstdio>
-#include <cmath>
+#include <bits/stdc++.h>
 using namespace std;
 
 // base and base_digits must be consistent
 const int base = 1000000000;
 const int base_digits = 9;
 
-struct bigint {
-    vector<int> z;
-    int sign;
+typedef long long ll;
 
-    bigint() :
-        sign(1) {
+struct Big {
+    vector<int> w;
+    int sign; // 1 or -1
+
+	int & operator [](int i) { return w[i]; }
+	const int & operator [](int i) const { return w[i]; }
+	
+	int size() const { return w.size(); }
+	void push_back(int x) { w.push_back(x); }
+	
+    Big() : sign(1) {}
+    Big(ll v) { *this = v; }
+    Big(const string &s) { read(s); }
+    //~ void operator=(const Big &he) { sign=he.sign; w=he.w; }
+    
+    bool iszero() const { return w.empty(); }
+
+    void operator=(ll v) {
+        sign = v >= 0 ? 1 : -1;
+        w.clear();
+        for(v = std::abs(v); v; v /= base)
+			push_back(v % base);
     }
-
-    bigint(long long v) {
-        *this = v;
-    }
-
-    bigint(const string &s) {
-        read(s);
-    }
-
-    void operator=(const bigint &v) {
-        sign = v.sign;
-        z = v.z;
-    }
-
-    void operator=(long long v) {
-        sign = 1;
-        if (v < 0)
-            sign = -1, v = -v;
-        z.clear();
-        for (; v > 0; v = v / base)
-            z.push_back(v % base);
-    }
-
-    bigint operator+(const bigint &v) const {
-        if (sign == v.sign) {
-            bigint res = v;
-
-            for (int i = 0, carry = 0; i < (int) max(z.size(), v.z.size()) || carry; ++i) {
-                if (i == (int) res.z.size())
-                    res.z.push_back(0);
-                res.z[i] += carry + (i < (int) z.size() ? z[i] : 0);
-                carry = res.z[i] >= base;
-                if (carry)
-                    res.z[i] -= base;
-            }
-            return res;
-        }
-        return *this - (-v);
-    }
-
-    bigint operator-(const bigint &v) const {
-        if (sign == v.sign) {
-            if (abs() >= v.abs()) {
-                bigint res = *this;
-                for (int i = 0, carry = 0; i < (int) v.z.size() || carry; ++i) {
-                    res.z[i] -= carry + (i < (int) v.z.size() ? v.z[i] : 0);
-                    carry = res.z[i] < 0;
-                    if (carry)
-                        res.z[i] += base;
-                }
-                res.trim();
-                return res;
-            }
-            return -(v - *this);
-        }
-        return *this + (-v);
-    }
+    
+    private : Big add_sub(const Big & he, int type) {
+		for (int i = 0, carry = 0; i < he.size() || carry; ++i) {
+			if (i == size()) push_back(0);
+			w[i] += type * (carry + (i < he.size() ? he[i] : 0));
+			if((carry = w[i] >= base)) w[i] -= base; // TODO: sth wrong with compilator? warning without extra ()
+			else if((carry = w[i] < 0)) w[i] += base;
+		}
+		trim();
+		return *this;
+	} public :
+    Big operator+(const Big &he) const {
+		if(he.iszero()) return *this;
+		if(sign != he.sign) return *this - (-he);
+		if(abs() < he.abs()) return he + *this;
+		Big res = *this;
+		return res.add_sub(he, 1);
+	}
+    Big operator-(const Big &he) const {
+		if(sign != he.sign) return *this + (-he);
+		if (abs() < he.abs()) return -(he - *this);
+		Big res = *this;
+		return res.add_sub(he, -1);
+	}
 
     void operator*=(int v) {
-        if (v < 0)
-            sign = -sign, v = -v;
-        for (int i = 0, carry = 0; i < (int) z.size() || carry; ++i) {
-            if (i == (int) z.size())
-                z.push_back(0);
-            long long cur = z[i] * (long long) v + carry;
-            carry = (int) (cur / base);
-            z[i] = (int) (cur % base);
-            //asm("divl %%ecx" : "=a"(carry), "=d"(a[i]) : "A"(cur), "c"(base));
+        if (v < 0) sign *= -1, v *= -1;
+        for (int i = 0, carry = 0; i < size() || carry; ++i) {
+            if (i == size()) push_back(0);
+            ll cur = (ll) w[i] * v + carry;
+            carry = cur / base;
+            w[i] = cur % base;
         }
         trim();
     }
 
-    bigint operator*(int v) const {
-        bigint res = *this;
+	void operator/=(int v) {
+        if (v < 0) sign *= -1, v *= -1;
+        for (int i = size() - 1, rem = 0; i >= 0; --i) {
+            ll cur = w[i] + (ll) rem * base;
+            w[i] = cur / v;
+            rem = cur % v;
+        }
+        trim();
+    }
+
+    Big operator*(int v) const {
+        Big res = *this;
         res *= v;
         return res;
     }
 
-    friend pair<bigint, bigint> divmod(const bigint &a1, const bigint &b1) {
-        int norm = base / (b1.z.back() + 1);
-        bigint a = a1.abs() * norm;
-        bigint b = b1.abs() * norm;
-        bigint q, r;
-        q.z.resize(a.z.size());
+    Big operator/(int v) const {
+        Big res = *this;
+        res /= v;
+        return res;
+    }
 
-        for (int i = a.z.size() - 1; i >= 0; i--) {
+    int operator%(int v) const {
+        if (v < 0) v *= -1; // consider assert(v > 0)
+        int m = 0;
+        for (int i = size() - 1; i >= 0; --i)
+            m = (w[i] + (ll) m * base) % v;
+        return m * sign;
+    }
+    
+
+    friend pair<Big, Big> divmod(const Big &a1, const Big &b1) {
+        int norm = base / (b1.w.back() + 1);
+        Big a = a1.abs() * norm;
+        Big b = b1.abs() * norm;
+        Big q, r;
+        q.w.resize(a.size());
+
+        for (int i = a.size() - 1; i >= 0; i--) {
             r *= base;
-            r += a.z[i];
-            int s1 = b.z.size() < r.z.size() ? r.z[b.z.size()] : 0;
-            int s2 = b.z.size() - 1 < r.z.size() ? r.z[b.z.size() - 1] : 0;
-            int d = ((long long) s1 * base + s2) / b.z.back();
+            r += a[i];
+            int s1 = b.size() < r.size() ? r[b.size()] : 0;
+            int s2 = b.size() - 1 < r.size() ? r[b.size() - 1] : 0;
+            int d = ((long long) s1 * base + s2) / b.w.back();
             r -= b * d;
             while (r < 0)
                 r += b, --d;
-            q.z[i] = d;
+            q[i] = d;
         }
 
         q.sign = a1.sign * b1.sign;
@@ -123,28 +127,28 @@ struct bigint {
         return make_pair(q, r / norm);
     }
 
-    friend bigint sqrt(const bigint &a1) {
-        bigint a = a1;
-        while (a.z.empty() || a.z.size() % 2 == 1)
-            a.z.push_back(0);
+    friend Big sqrt(const Big &a1) {
+        Big a = a1;
+        while (a.w.empty() || a.size() % 2 == 1)
+            a.push_back(0);
 
-        int n = a.z.size();
+        int n = a.size();
         
-        int firstDigit = (int) sqrt((double) a.z[n - 1] * base + a.z[n - 2]);
+        int firstDigit = (int) sqrt((double) a[n - 1] * base + a[n - 2]);
         int norm = base / (firstDigit + 1);
         a *= norm;
         a *= norm;
-		while (a.z.empty() || a.z.size() % 2 == 1)
-			a.z.push_back(0);
+		while (a.w.empty() || a.size() % 2 == 1)
+			a.push_back(0);
         
-        bigint r = (long long) a.z[n - 1] * base + a.z[n - 2];
-        firstDigit = (int) sqrt((double) a.z[n - 1] * base + a.z[n - 2]);
+        Big r = (long long) a[n - 1] * base + a[n - 2];
+        firstDigit = (int) sqrt((double) a[n - 1] * base + a[n - 2]);
         int q = firstDigit;
-		bigint res;
+		Big res;
  
         for(int j = n / 2 - 1; j >= 0; j--) {
             for(; ; --q) {
-                bigint r1 = (r - (res * 2 * base + q) * q) * base * base + (j > 0 ? (long long) a.z[2 * j - 1] * base + a.z[2 * j - 2] : 0);
+                Big r1 = (r - (res * 2 * base + q) * q) * base * base + (j > 0 ? (long long) a[2 * j - 1] * base + a[2 * j - 2] : 0);
                 if (r1 >= 0) {
                     r = r1;
                     break;
@@ -154,9 +158,9 @@ struct bigint {
             res += q;
 
             if (j > 0) {
-				int d1 = res.z.size() + 2 < r.z.size() ? r.z[res.z.size() + 2] : 0;
-				int d2 = res.z.size() + 1 < r.z.size() ? r.z[res.z.size() + 1] : 0;
-                int d3 = res.z.size() < r.z.size() ? r.z[res.z.size()] : 0;
+				int d1 = res.size() + 2 < r.size() ? r[res.size() + 2] : 0;
+				int d2 = res.size() + 1 < r.size() ? r[res.size() + 1] : 0;
+                int d3 = res.size() < r.size() ? r[res.size()] : 0;
                 q = ((long long) d1 * base * base + (long long) d2 * base + d3) / (firstDigit * 2);
             }           
         }
@@ -165,120 +169,72 @@ struct bigint {
         return res / norm;
     }
 
-    bigint operator/(const bigint &v) const {
+    Big operator/(const Big &v) const {
         return divmod(*this, v).first;
     }
 
-    bigint operator%(const bigint &v) const {
+    Big operator%(const Big &v) const {
         return divmod(*this, v).second;
     }
 
-    void operator/=(int v) {
-        if (v < 0)
-            sign = -sign, v = -v;
-        for (int i = (int) z.size() - 1, rem = 0; i >= 0; --i) {
-            long long cur = z[i] + rem * (long long) base;
-            z[i] = (int) (cur / v);
-            rem = (int) (cur % v);
-        }
-        trim();
-    }
-
-    bigint operator/(int v) const {
-        bigint res = *this;
-        res /= v;
-        return res;
-    }
-
-    int operator%(int v) const {
-        if (v < 0)
-            v = -v;
-        int m = 0;
-        for (int i = z.size() - 1; i >= 0; --i)
-            m = (z[i] + m * (long long) base) % v;
-        return m * sign;
-    }
-
-    void operator+=(const bigint &v) {
+    void operator+=(const Big &v) {
         *this = *this + v;
     }
-    void operator-=(const bigint &v) {
+    void operator-=(const Big &v) {
         *this = *this - v;
     }
-    void operator*=(const bigint &v) {
+    void operator*=(const Big &v) {
         *this = *this * v;
     }
-    void operator/=(const bigint &v) {
+    void operator/=(const Big &v) {
         *this = *this / v;
     }
 
-    bool operator<(const bigint &v) const {
-        if (sign != v.sign)
-            return sign < v.sign;
-        if (z.size() != v.z.size())
-            return z.size() * sign < v.z.size() * v.sign;
-        for (int i = z.size() - 1; i >= 0; i--)
-            if (z[i] != v.z[i])
-                return z[i] * sign < v.z[i] * sign;
-        return false;
+    // comparators
+    int comp(const Big & he) const {
+		if(sign != he.sign) return sign;
+		if(size() != he.size())
+			return sign * (size() < he.size() ? -1 : 1);
+		for (int i = size() - 1; i >= 0; i--)
+            if (w[i] != he[i])
+                return sign * (w[i] < he[i] ? -1 : 1);
+        return 0;
     }
+    bool operator<(const Big &he) const { return comp(he) < 0; }
+    bool operator<=(const Big &he) const { return comp(he) <= 0; }
+    bool operator>(const Big &he) const { return comp(he) > 0; }
+    bool operator>=(const Big &he) const { return comp(he) >= 0; }
+    bool operator==(const Big &he) const { return comp(he) == 0; }
+    bool operator!=(const Big &he) const { return comp(he) != 0; }
 
-    bool operator>(const bigint &v) const {
-        return v < *this;
-    }
-    bool operator<=(const bigint &v) const {
-        return !(v < *this);
-    }
-    bool operator>=(const bigint &v) const {
-        return !(*this < v);
-    }
-    bool operator==(const bigint &v) const {
-        return !(*this < v) && !(v < *this);
-    }
-    bool operator!=(const bigint &v) const {
-        return *this < v || v < *this;
-    }
 
     void trim() {
-        while (!z.empty() && z.back() == 0)
-            z.pop_back();
-        if (z.empty())
-            sign = 1;
+        while (!w.empty() && w.back() == 0) w.pop_back();
+        if (w.empty()) sign = 1;
     }
 
-    bool isZero() const {
-        return z.empty() || (z.size() == 1 && !z[0]);
-    }
-
-    bigint operator-() const {
-        bigint res = *this;
+    Big operator-() const {
+        Big res = *this;
         res.sign = -sign;
         return res;
     }
 
-    bigint abs() const {
-        bigint res = *this;
-        res.sign *= res.sign;
+    Big abs() const {
+        Big res = *this;
+        res.sign = 1;
         return res;
     }
 
-    long long longValue() const {
-        long long res = 0;
-        for (int i = z.size() - 1; i >= 0; i--)
-            res = res * base + z[i];
+    ll longValue() const {
+        ll res = 0;
+        for (int i = size() - 1; i >= 0; i--)
+            res = res * base + w[i];
         return res * sign;
-    }
-
-    friend bigint gcd(const bigint &a, const bigint &b) {
-        return b.isZero() ? a : gcd(b, a % b);
-    }
-    friend bigint lcm(const bigint &a, const bigint &b) {
-        return a / gcd(a, b) * b;
     }
 
     void read(const string &s) {
         sign = 1;
-        z.clear();
+        w.clear();
         int pos = 0;
         while (pos < (int) s.size() && (s[pos] == '-' || s[pos] == '+')) {
             if (s[pos] == '-')
@@ -289,24 +245,24 @@ struct bigint {
             int x = 0;
             for (int j = max(pos, i - base_digits + 1); j <= i; j++)
                 x = x * 10 + s[j] - '0';
-            z.push_back(x);
+            push_back(x);
         }
         trim();
     }
 
-    friend istream& operator>>(istream &stream, bigint &v) {
+    friend istream& operator>>(istream &stream, Big &v) {
         string s;
         stream >> s;
         v.read(s);
         return stream;
     }
 
-    friend ostream& operator<<(ostream &stream, const bigint &v) {
+    friend ostream& operator<<(ostream &stream, const Big &v) {
         if (v.sign == -1)
             stream << '-';
-        stream << (v.z.empty() ? 0 : v.z.back());
-        for (int i = (int) v.z.size() - 2; i >= 0; --i)
-            stream << setw(base_digits) << setfill('0') << v.z[i];
+        stream << (v.w.empty() ? 0 : v.w.back());
+        for (int i = (int) v.size() - 2; i >= 0; --i)
+            stream << setw(base_digits) << setfill('0') << v[i];
         return stream;
     }
 
@@ -374,9 +330,9 @@ struct bigint {
         return res;
     }
 
-    bigint operator*(const bigint &v) const {
-        vector<int> a6 = convert_base(this->z, base_digits, 6);
-        vector<int> b6 = convert_base(v.z, base_digits, 6);
+    Big operator*(const Big &v) const {
+        vector<int> a6 = convert_base(this->w, base_digits, 6);
+        vector<int> b6 = convert_base(v.w, base_digits, 6);
         vll a(a6.begin(), a6.end());
         vll b(b6.begin(), b6.end());
         while (a.size() < b.size())
@@ -386,25 +342,25 @@ struct bigint {
         while (a.size() & (a.size() - 1))
             a.push_back(0), b.push_back(0);
         vll c = karatsubaMultiply(a, b);
-        bigint res;
+        Big res;
         res.sign = sign * v.sign;
         for (int i = 0, carry = 0; i < (int) c.size(); i++) {
             long long cur = c[i] + carry;
-            res.z.push_back((int) (cur % 1000000));
+            res.push_back((int) (cur % 1000000));
             carry = (int) (cur / 1000000);
         }
-        res.z = convert_base(res.z, 6, base_digits);
+        res.w = convert_base(res.w, 6, base_digits);
         res.trim();
         return res;
     }
 };
 
-bigint random_bigint(int n) {
+Big random_Big(int n) {
 	string s;
 	for (int i = 0; i < n; i++) {
 		s += rand() % 10 + '0';
 	}
-	return bigint(s);
+	return Big(s);
 }
 
 // random tests
@@ -412,10 +368,10 @@ int main() {
 	for(int i = 0; i < 1000; i++) {
 		cout << i << endl;
 		int n = rand() % 100 + 1;
-		bigint a = random_bigint(n);
-		bigint res = sqrt(a);
-		bigint xx = res * res;
-		bigint yy = (res + 1) * (res + 1);
+		Big a = random_Big(n);
+		Big res = sqrt(a);
+		Big xx = res * res;
+		Big yy = (res + 1) * (res + 1);
  
 		if (xx > a || yy <= a) {
 			cout << a << " " << res << endl;
@@ -423,7 +379,7 @@ int main() {
 		}
 
 		int m = rand() % n + 1;
-		bigint b = random_bigint(m) + 1;
+		Big b = random_Big(m) + 1;
 		res = a / b;
 		xx = res * b;
 		yy = b * (res + 1);
@@ -434,13 +390,13 @@ int main() {
 		}
 	}
 
-    bigint a = random_bigint(10000);
-	bigint b = random_bigint(2000);
+    Big a = random_Big(10000);
+	Big b = random_Big(2000);
     clock_t start = clock();
-    bigint c = a / b;
+    Big c = a / b;
     fprintf(stdout, "time=%.3lfsec\n", 0.001 * (clock() - start));
 
-    bigint x = 5;
+    Big x = 5;
     x = 6;
     cout << x << endl;
 }
