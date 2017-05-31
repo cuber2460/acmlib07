@@ -54,3 +54,12 @@ int main() {
   cout << s.order_of_key(1) << endl;    // Out: 0.
   cout << *s.find_by_order(1) << endl;  // Out: 2.
 }
+
+// Własna funkcja haszująca.
+struct MyHash {
+  std::size_t operator()(const MojTyp& x) { /* ... */ }
+};
+
+bool operator==(const MojTyp& a, const MojType& b) { /* ... */ }
+
+std::unordered_set<MojTyp, MyHash> secik;
