@@ -34,14 +34,13 @@ void dft(vector<C> & a, bool rev) {
 				const C x = a[i+k], y = a[i+k+len/2] * (k >= step ?
 					giant[k/step] * baby[k%step] : baby[k%step]);
 				a[i+k] = C{x.real + y.real, x.imag + y.imag};
-				a[i+k+len/2] = C{x.real - y.real, x.imag - y.imag};;
+				a[i+k+len/2] = C{x.real - y.real, x.imag - y.imag};
 			}
 		}
 	}
 	if(rev) REP(i, n) a[i].real /= n;
 }
-template<typename T> vector<T> multiply(const vector<T> & a,
-																			const vector<T> & b) {
+template<typename T>vector<T> multiply(const vector<T> & a, const vector<T> & b) {
 	if(a.empty() || b.empty()) return {};
 	int n = a.size() + b.size();
 	vector<T> ans(n - 1);/*if(min(a.size(), b.size()) < 200){
@@ -57,10 +56,9 @@ template<typename T> vector<T> multiply(const vector<T> & a,
 	dft(one, true);
 	REP(i, ans.size()) ans[i] = is_integral<T>::value ?
 			llround(one[i].real) : one[i].real;
-	return ans;			// for integers: error = abs(ans[i]-real)
+	return ans;		// for integers: error = abs(ans[i]-real)
 } // slow_mul() is 7/3 times slower (3 vs 7 runs of DFT)
-template<typename T> vector<T> slow_mul(const vector<T> & a,
-																			const vector<T> & b) {
+template<typename T>vector<T> slow_mul(const vector<T> & a, const vector<T> & b) {
 	if(a.empty() || b.empty()) return {}; int n = a.size()
 	+ b.size(); vector<T> ans(n - 1); while(n&(n-1)) ++n;
 	// if(min(sizes) < 200) run brute force
