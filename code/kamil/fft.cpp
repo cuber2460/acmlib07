@@ -2,10 +2,10 @@
 using namespace std;
 #define REP(i,n) for(int i = 0; i < int(n); ++i)
 /*Precision error max_ans/1e15 (2.5e18) for (long) doubles.
-So doubles are barely ok for sizes 2^20 and RANDOM positive
-ints up to 45k, or for sizes 2^18 and ints close to 45k.
+So integer rounding works for doubles with answers 0.5*1e15,
+e.g. for sizes 2^20 and RANDOM positive integers up to 45k.
 Those values assume DBL_MANT_DIG=53 and LDBL_MANT_DIG=64.
-For input in [0, M], you can decrease everything by -M/2.
+For input in [0, M], you can decrease everything by M/2.
 For many small vectors, use brute-force and step = 4.*/
 typedef double ld; // 'long double' is 2.2 times slower
 struct C {
@@ -35,19 +35,18 @@ void dft(vector<C> & a, bool rev) {
 					giant[k/step] * baby[k%step] : baby[k%step]);
 				a[i+k] = C{x.real + y.real, x.imag + y.imag};
 				a[i+k+len/2] = C{x.real - y.real, x.imag - y.imag};
-			}
-		}
-	}
+	}}}
 	if(rev) REP(i, n) a[i].real /= n;
 }
 template<typename T>vector<T> multiply(const vector<T> & a, const vector<T> & b) {
 	if(a.empty() || b.empty()) return {};
 	int n = a.size() + b.size();
-	vector<T> ans(n - 1);/*if(min(a.size(), b.size()) < 200){
-	REP(i, a.size()) REP(j, b.size()) ans[i+j] += a[i]*b[j];
-	return ans;} // (use brute-force for many small vectors)*/
-	while(n&(n-1)) ++n;
-	vector<C> one(n), two(n);
+	vector<T> ans(n - 1);
+/*if(min(a.size(),b.size())<200){//use if many small vectors
+		REP(i, a.size()) REP(j, b.size()) ans[i+j] += a[i]*b[j];
+		return ans;} */
+	while(n&(n-1)) ++n;	
+	vector<C> one(n), two(n); // standard version starts here
 	REP(i, a.size()) one[i].real = a[i];
 	REP(i, b.size()) two[i].real = b[i];
 	dft(one, false);
@@ -56,17 +55,11 @@ template<typename T>vector<T> multiply(const vector<T> & a, const vector<T> & b)
 	dft(one, true);
 	REP(i, ans.size()) ans[i] = is_integral<T>::value ?
 			llround(one[i].real) : one[i].real;
-	return ans;		// for integers: error = abs(ans[i]-real)
-} // slow_mul() is 7/3 times slower (3 vs 7 runs of DFT)
-template<typename T>vector<T> slow_mul(const vector<T> & a, const vector<T> & b) {
-	if(a.empty() || b.empty()) return {}; int n = a.size()
-	+ b.size(); vector<T> ans(n - 1); while(n&(n-1)) ++n;
-	// if(min(sizes) < 200) run brute force
-	const T M = 150; // sqrt(max_absvalue)
-	vector<C> t[2][2];  //two 10^6 vectors means that n = 2^21
-	REP(x,2)REP(y,2) {  // so we get 2^24 numbers of 'ld' type
-		t[x][y].resize(n);// (watch out for MLE)
-		auto & in = x ? b : a;
+	// You can split big INTEGERS into pairs a1*M+a2,
+/*const T M = 150; // where M = sqrt(max_absvalue).
+	vector<C> t[2][2]; // This version is 7/3 times slower.
+	REP(x,2)REP(y,2) { // Watch out for MLE (big constant).
+		t[x][y].resize(n); auto & in = x ? b : a;
 		REP(i,in.size()) t[x][y][i].real= y ? in[i]/M : in[i]%M;
 		dft(t[x][y], false);
 	}
@@ -77,12 +70,9 @@ template<typename T>vector<T> slow_mul(const vector<T> & a, const vector<T> & b)
 			prod[i].real += he.real; prod[i].imag += he.imag;
 		}
 		dft(prod, true);
-		REP(i, ans.size()) {
-			T tmp = llround(prod[i].real); // error=abs(tmp-real)
-			REP(_, s) tmp *= M;
-			ans[i] += tmp;
-		}
-	}
+		REP(i, ans.size()) ans[i] +=
+				llround(prod[i].real) * my_integer_power(M, s);
+	}*/
 	return ans;
 }
 
