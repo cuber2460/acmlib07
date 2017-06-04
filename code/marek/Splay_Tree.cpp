@@ -7,6 +7,7 @@ struct N {
   N(int key) : key(key) {}
   void Touch(N* left, N* right)  {}
   // Update must leave the node in a state that doesn't require a "Touch".
+  // May assume that both children are touched.
   void Update(N* left, N* right) {}
 
   // Called instead of a destructor.  Should free any resource associated with
@@ -34,10 +35,9 @@ int New(A&& ...a) {
 }
 
 void ReserveAtLeast(int n) {
-  const int shortage = n - (int) fd.size();
-  if (shortage > 0) {
-    for (int i = 1; i <= shortage; i++) fd.push_back(d.size() + i);
-    d.resize(d.size() + shortage);
+  while (fd.size() < n) {
+    d.resize(d.size() + 1);
+    fd.push_back(d.size());
   }
 }
 
@@ -62,11 +62,10 @@ void Rotate(int v) {
 
 // Moves @v to the root.
 void Splay(int v) {
-  if (!v) return;
+  if (!Touch(v)) return;
   Touch(C(v, 0));
   Touch(C(v, 1));
-  while (P(v)) {
-    const int p = P(v);
+  while (const int p = P(v)) {
     Touch(C(p, X(v) ^ 1));
     if (P(p)) {
       Touch(C(P(p), X(p) ^ 1));
@@ -89,16 +88,18 @@ bool Next(int& v, int x = 1) {
 
 // Sets the first (or last when x = 1) node as a root.
 void First(int& v, int x = 0) {
+  if (!v) return;
   while (C(Touch(v), x)) v = C(v, x);
   Splay(v);
 }
 
 // Joins trees @l and @r into a single tree.
-// Assumes that max(l) < min(l).
+// Assumes that max(l) < min(r).
 int Join(int l, int r) {
   if (!l or !r) return Touch(l + r);
   First(r);
-  C(P(Touch(l)) = r, 0) = l;
+  C(P(l) = r, 0) = Touch(l);
+  Touch(C(r, 1));
   return Update(r);
 }
 
@@ -109,7 +110,7 @@ pair<int, int> Split(int v) {
   if (!l) return {0, v};
   C(v, 0) = P(l) = 0;
   Touch(C(v, 1));
-  return {l, Update(v)};
+  return {Touch(l), Update(v)};
 }
 
 // Deletes the root node, if the tree is not empty.
@@ -122,26 +123,26 @@ void DeleteRoot(int& v) {
   v = result;
 }
 
-// Deletes the whole tree.  @v should no longer be used as a tree.
-// NOT TESTED!
-void DeleteTree(int v) {
- int tmp = v;
-  while (v = tmp) {
-    if (tmp = C(v, 0)) C(v, 0) = 0;
-    else if (tmp = C(v, 1)) C(v, 1) = 0;
-    else tmp = P(v), Delete(v);
+// Deletes all nodes in the tree.  NOT TESTED!
+void DeleteTree(int& v) {
+  while (const int t = v) {
+    if (v = C(t, 0)) C(t, 0) = 0;
+    else if (v = C(t, 1)) C(t, 1) = 0;
+    else v = P(t), Delete(t);
   }
 }
 
-// This function traveses the tree without splaying.  For each node on the path,
-// function @f is called.  If it returns 0, the current node is returned.
+// This function traverses the tree without splaying.  For each node on
+// the path, function @f is called.  If it returns 0, the procedure ends.
 // On -1, the left subtree is visited, on 1 the right subtree is visited.
 // @p is set to the parent of the last visisted node.
 // @v points to the variable that holds the last visited node.
-// Nothing is splayed, so its neccessary to call Splay on v afterwards.
-// F :: N* -> {-1, 0, 1}
+// Nothing is splayed, so it's neccessary to call Splay on v afterwards.
+// F :: N& -> {-1, 0, 1}
 // This function operates on pointers, so note that after calling @New(),
 // results returned by this function become invalid.
+// The returned pointer is either the pointer to the root node (when tree is
+// empty) or the pointer to @p's variable holding the child id.
 template <typename F>
 void GoDown(int*& v, int& p, F f) {
   p = 0;
@@ -167,7 +168,7 @@ N& FindOrCreate(int& v, int key) {
   GoDown(vptr, p, Cmp(key));
   if (!*vptr) P(*vptr = New(key)) = p;
   Splay(v = *vptr);
-  return *S::Get(v);
+  return *Get(v);
 }
 
 // (-oo, a), [a, +oo).
@@ -188,7 +189,7 @@ pair<int, int> SplitByKey(int v, int a) {
 // F :: int& -> Return (if it wants to change the subtree)
 // F :: int  -> Return (if it doesn't want to change the subtree)
 template <typename F>
-auto RangeF(int& v, int a, int b, F f) -> decltype(f(a)) {
+auto RangeF(int& v, int a, int b, F f) -> decltype(f(v)) {
   auto lm = SplitByKey(v, a);
   auto mr = SplitByKey(lm.second, b + 1);
   auto l = [&]() { v = Join(lm.first, Join(mr.first, mr.second)); };
