@@ -34,7 +34,7 @@ void dft(vector<C> & a, bool rev) {
 				const C x = a[i+k], y = a[i+k+len/2] * (k >= step ?
 					giant[k/step] * baby[k%step] : baby[k%step]);
 				a[i+k] = C{x.real + y.real, x.imag + y.imag};
-				a[i+k+len/2] = C{x.real - y.real, x.imag - y.imag};
+				a[i+k+len/2] = C{x.real - y.real, x.imag - y.imag};;
 			}
 		}
 	}
