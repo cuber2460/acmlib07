@@ -1,55 +1,49 @@
 #include <bits/stdc++.h>
 using namespace std;
-typedef unsigned int T;
-vector<T> brute_mul(const vector<T> & a, const vector<T> & b) {
-	if(a.empty() || b.empty()) return vector<T>{};
-	vector<T> r(a.size() + b.size() - 1, 0);
-	for(int i = 0; i < (int) a.size(); ++i)
-		for(int j = 0; j < (int) b.size(); ++j)
-			r[i+j] += a[i] * b[j];
-	return r;
+#define REP(i, n) for(int i = 0; i < (n); ++i)
+// Complexity O(A * B^0.6) where A >= B.
+template<typename T> void rec_kara(T* a, int one, T* b, int two, T* r) {
+	if(min(one, two) <= 20) { // must be at least "<= 1"
+		REP(i, one) REP(j, two) r[i+j] += a[i] * b[j];
+		return;
+	}
+	const int x = min(one, two);
+	if(one < two) rec_kara(a, x, b + x, two - x, r + x);
+	if(two < one) rec_kara(a + x, one - x, b, x, r + x);
+	const int n = (x + 1) / 2, right = x / 2;
+	vector<T> tu(2 * n);
+	rec_kara(a, n, b, n, tu.data());
+	REP(i, 2 * n - 1) {
+		r[i] += tu[i];
+		r[i+n] -= tu[i];
+		tu[i] = 0;
+	}
+	rec_kara(a + n, right, b + n, right, tu.data());
+	REP(i, 2 * right - 1) r[i+n] -= tu[i], r[i+2*n] += tu[i];
+	tu[n-1] = a[n-1]; tu[2*n-1] = b[n-1];
+	REP(i, right) tu[i] = a[i]+a[i+n], tu[i+n] = b[i]+b[i+n];
+	rec_kara(tu.data(), n, tu.data() + n, n, r + n);
 }
-vector<T> karatsuba(vector<T> a, vector<T> b) {
-	if(min(a.size(), b.size()) <= 150) return brute_mul(a, b);
-	int half = (max(a.size(), b.size()) + 1) / 2;
-	vector<T> a2(max(0, (int) a.size() - half)), b2(max(0, (int) b.size() - half));
-	for(int i = half; i < (int) a.size(); ++i)
-		a2[i - half] = a[i];
-	a.resize(min(half, (int) a.size()));
-	for(int i = half; i < (int) b.size(); ++i)
-		b2[i - half] = b[i];
-	b.resize(min(half, (int) b.size()));
-	vector<T> z0 = karatsuba(a, b);
-	assert(a.size() >= a2.size());
-	assert(b.size() >= b2.size());
-	for(int i = 0; i < (int) a2.size(); ++i)
-		a[i] += a2[i];
-	for(int i = 0; i < (int) b2.size(); ++i)
-		b[i] += b2[i];
-	vector<T> z1 = karatsuba(a, b);
-	vector<T> z2 = karatsuba(a2, b2);
-	vector<T> r(max(z2.size() + 2 * half, z1.size() + half), 0);
-	for(int i = 0; i < (int) z2.size(); ++i) {
-		r[i + half] -= z2[i];
-		r[i + 2 * half] += z2[i];
-	}
-	for(int i = 0; i < (int) z1.size(); ++i)
-		r[i + half] += z1[i];
-	for(int i = 0; i < (int) z0.size(); ++i) {
-		r[i] += z0[i];
-		r[i + half] -= z0[i];
-	}
-	while(!r.empty() && r.back() == 0) r.pop_back();
+template<typename T> vector<T> karatsuba(vector<T> a, vector<T> b) {
+	if(a.empty() || b.empty()) return {};
+	vector<T> r(a.size() + b.size() - 1);
+	rec_kara(a.data(), a.size(), b.data(), b.size(), r.data());
 	return r;
 }
 
+vector<int> r(int n) {
+	vector<int> w;
+	for(int i = 0; i < n; ++i) w.push_back(rand() % 10);
+	return w;
+}
+
 int main() {
-	int n = 100 * 1000, m = 100 * 1000;
-	vector<T> a, b;
-	for(int i = 0; i < n; ++i)
-		a.push_back(rand() % 100);
-	for(int i = 0; i < m; ++i)
-		b.push_back(rand() % 100);
-	//brute_mul(a, b);
-	karatsuba(a, b);
+	//vector<int> a = {1,2,3};
+	//vector<int> b = {5,0,20,500};
+	//vector<int> r = karatsuba(a, b);
+	vector<int> a = r(200123), b = r(200123);
+	//~ vector<int> a = r(500123), b = r(5817);
+	vector<int> r = karatsuba(a, b);
+	for(int i = 0; i < min(10, (int) r.size()); ++i) cout << r[i] << " ";
+	cout << "\n";
 }
