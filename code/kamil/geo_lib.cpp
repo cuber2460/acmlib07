@@ -20,9 +20,40 @@ of three consecutive non-parallel lines is positive iff all three lines
 are visible from the above, i.e. they form an upside down 'A' shape. */
 
 #include <bits/stdc++.h>
+
 using namespace std;
+
+#define sim template < class c
+#define ris return * this
+#define dor > debug & operator <<
+#define eni(x) sim > typename \
+  enable_if<sizeof dud<c>(0) x 1, debug&>::type operator<<(c i) {
+sim > struct rge { c b, e; };
+sim > rge<c> range(c i, c j) { return rge<c>{i, j}; }
+sim > auto dud(c* x) -> decltype(cerr << *x, 0);
+sim > char dud(...);
+struct debug {
+#ifdef LOCAL
+~debug() { cerr << endl; }
+eni(!=) cerr << boolalpha << i; ris; }
+eni(==) ris << range(begin(i), end(i)); }
+sim, class b dor(pair < b, c > d) {
+  ris << "(" << d.first << ", " << d.second << ")";
+}
+sim dor(rge<c> d) {
+  *this << "[";
+  for (auto it = d.b; it != d.e; ++it)
+    *this << ", " + 2 * (it == d.b) << *it;
+  ris << "]";
+}
+#else
+sim dor(const c&) { ris; }
+#endif
+};
+#define imie(...) " [" << #__VA_ARGS__ ": " << (__VA_ARGS__) << "] "
+
 template<typename T> T K(T a) { return a * a; } // 'K(int)' may overflow!
-typedef long long ll; // can be changed to 'long double'
+typedef long double ll; // can be changed to 'long double'
 typedef long double ld;
 // const ld PI = 2 * acos(0);
 const ld eps = 1e-12;
@@ -32,22 +63,45 @@ struct P {
 	P operator + (P b) { return P{x + b.x, y + b.y}; }
 	P operator - (P b) { return P{x - b.x, y - b.y}; }
 	P operator * (ld/*ll*/ mul) { return P{x * mul, y * mul}; }
+	P operator / (ld mul) { assert(mul); return P{x / mul, y / mul}; }
 	ll operator * (P b) { return x * b.y - y * b.x; }
 	ll dot(P b) { return x * b.x + y * b.y; }
 	ld len() { return sqrt(K(x) + K(y)); }
-	P lenTo(ld to) { return *this * (to / len()); }
+	P scaleTo(ld to) { return *this * (to / len()); }
 	ld dist(P & b) { return (*this - b).len(); }
 	P rotate90() { return P{-y, x}; }
 	ld angle() { return atan2(y, x); }
-	P rotate(ld angle) {
-		ld c = cos(angle), s = sin(angle);
+	P rotate(ld ang) {
+		ld c = cos(ang), s = sin(ang);
 		return P{x * c - y * s, x * s + y * c};
 	}
 	// '<' and 'below()' needed for Convex Hull
 	bool operator < (P he) { return make_pair(x, y) < make_pair(he.x, he.y); }
 	bool below(P a, P b) { return (b - a) * (*this - a) <= 0/*eps*/; } //INFO 1
 	void write(string s) { cerr << "(" << x << ", " << y << ")" << s; }
+	// Internal/External Similitude Center
+	P apol_in(P b, ld ratio) { // ratio = dist()/he.dist()
+		return (*this + b * ratio) / (1 + ratio);
+	}
+	P apol_out(P b, ld ratio) {
+		return (*this - b * ratio) / (1 - ratio);
+	}
+	void print(debug & dd) const {
+		dd << make_pair(x, y);
+	}
 };
+
+/*   using debug()
+ostream & operator << (ostream & dd, P p) {
+	dd << "(" << p.x << ", " << p.y << ") ";
+	return dd;
+}
+*/
+
+debug & operator << (debug & dd, P p) {
+	p.print(dd);
+	return dd;
+}
 
 struct L2 {
 	P one, two;
@@ -76,10 +130,11 @@ struct L2 {
 		// return P{A / B, A' / B};
 	}
 	P project(P he) {
-		P unit_normal = normal().lenTo(1);
+		P unit_normal = normal().scaleTo(1);
 		return he + unit_normal * unit_normal.dot(one - he);
 	}
 	P reflect(P he) { return project(he) * 2 - he; }
+	void print(debug & dd) const { dd << imie(one) << imie(two); }
 	void write() { cerr << "L2{ "; one.write(", "); cerr << " }\n"; }
 	// for CH: sort by slope; below() : change to L3 or compare 'x' of intersections
 };
@@ -140,9 +195,6 @@ struct L3 {
 		ll t[3][3] = { {A.a,A.b,A.c}, {a,b,c}, {C.a,C.b,C.c} };
 		return det(t) <= 0/*eps*/; // WARN1
 	}
-	void write() {
-		cerr << "L3{ " << a << "*x+" << b << "*y+" << c << " }\n";
-	}
 };
 L3 toL3(P one, P two) {
 	ll a = two.y - one.y;
@@ -153,7 +205,7 @@ L3 toL3(P one, P two) {
 struct Circle {
 	P o;
 	ld r;
-	vector<P> tangency(P & he) {
+	vector<P> tangency(P he) {
 		ld d = o.dist(he);
 		if(abs(d - r) < eps) return vector<P>{he};
 		if(d < r) return vector<P>{};
@@ -167,16 +219,58 @@ struct Circle {
 		ld d = prim.dist(o);
 		if(d >= r + eps) return vector<P>{};
 		if(abs(d - r) <= eps) return vector<P>{prim};
-		P vec = he.dir().lenTo(sqrt(K(r) - K(d)));
+		P vec = he.dir().scaleTo(sqrt(K(r) - K(d)));
 		return vector<P>{prim + vec, prim - vec};
 	}	
 	vector<P> inter(Circle he) {
 		return inter(L3{2*(o.x-he.o.x), 2*(o.y-he.o.y),
 				K(r)-K(he.r)-K(o.x)-K(o.y)+K(he.o.x)+K(he.o.y)});
 	}
+	void print(debug & dd) const {
+		dd << imie(o.x) ", " imie(o.y) ",  " imie(r);
+	}
+	vector<L2> tangency(Circle he) {
+		vector<L2> ret;
+		ld ratio = r / he.r;
+		auto considerPoint = [&] (P p) {
+			vector<P> one = tangency(p), two = he.tangency(p);
+			for(int i = 0; i < (int) min(one.size(), two.size()); ++i)
+				ret.push_back(L2{one[i], two[i]});
+		};
+		if(abs(r - he.r < 1e-9)) {
+			P dir = (he.o - o).rotate90().scaleTo(r);
+			for(int tmp : {1, -1})
+				ret.push_back(L2{o + dir * tmp, he.o + dir * tmp});
+		}
+		else considerPoint(o.apol_out(he.o, ratio));
+		// the following will produce 2/1/0 pairs
+		// for distant/touching/intersecting circles
+		considerPoint(o.apol_in(he.o, ratio));
+		return ret;
+	}
 };
 
+debug & operator << (debug & dd, Circle c) {
+	c.print(dd);
+	return dd;
+}
+debug & operator << (debug & dd, L2 line) {
+	line.print(dd);
+	return dd;
+}
+
+Circle apollonius(P a, P b, ld ratio) { // ratio = distA / distB
+	assert(ratio >= 0);
+	assert(abs(ratio - 1) > 1e-14); // straight line through (a+b)/2
+	P in = a.apol_in(b, ratio), out = a.apol_out(b, ratio);
+	return Circle{(in + out) / 2, in.dist(out) / 2};
+}
+
 int main() {
+	debug() << imie(Circle{P{2,7},10}.tangency(Circle{P{-15,-3},4}));
+	debug() << imie(apollonius(P{0,0}, P{10,0}, 0.5));
+	debug() << imie(apollonius(P{10,0}, P{0,0}, 2));
+	return 0;
 	int aa;
 	cin >> aa;
 	cout << aa << "\n";
@@ -197,7 +291,7 @@ int main() {
 	L2{P{0,10},P{10,0}}.write();
 	L2{P{0,10},P{10,0}}.project(P{7,2}).write("\n");
 	L3{5,2,3}.inter(L3{-2,3,7}).write("\n");
-	L3{5,2,3}.write();
+	//~ L3{5,2,3}.write();
 	Circle c = Circle{P{8,3}, 3};
 	vector<P> w = c.inter(Circle{P{11,4}, 5});
 	for(P p : w) {
