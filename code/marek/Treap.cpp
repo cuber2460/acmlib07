@@ -61,7 +61,7 @@ int Merge(int a, int b, int c, int A = 1) {
     if (!Touch(a = C(p, x ^= y))) swap(a, b);
   }
   C(p, x) = c;
-  while (p = P(Update(p)));
+  while (p > 1) p = P(Update(p));
   return C(A, 1);
 }
 
@@ -82,7 +82,7 @@ void Split(int v, int& L, int& M, int& R, const F& f, int A = 0, int B = 0) {
     a = C(P(v) = a, x) = v;
     swap(v = 0, C(a, x));
   }
-  while (a = P(Update(a)));
-  while (b = P(Update(b)));
+  while (a > 1) a = P(Update(a));
+  while (b > 1) b = P(Update(b));
   L = C(A, 1); M = Update(v); R = C(A, 0);
 }
