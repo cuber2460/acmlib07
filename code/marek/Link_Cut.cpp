@@ -17,6 +17,9 @@ struct Splay : Value
 	{
 	}
 
+  // Sprawdza, czy wierzchołek jest rootem splejowym.
+  // Aby sprawdzić, czy wierzchołek jest rootem drzewa, trzeba napisać:
+  // if (v == v->root()) { ... }
 	bool isRoot()
 	{
 		return !p || (p->l != this && p->r != this);
