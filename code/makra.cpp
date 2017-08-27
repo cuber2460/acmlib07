@@ -21,7 +21,7 @@ sim, class b dor(pair < b, c > d) {
 }
 sim dor(rge<c> d) {
   *this << "[";
-  for (auto it = d.b; it != d.e; ++it)
+  for (c it = d.b; it != d.e; ++it)
     *this << ", " + 2 * (it == d.b) << *it;
   ris << "]";
 }
