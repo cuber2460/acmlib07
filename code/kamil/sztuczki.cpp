@@ -63,3 +63,12 @@ struct MyHash {
 bool operator==(const MojTyp& a, const MojType& b) { /* ... */ }
 
 std::unordered_set<MojTyp, MyHash> secik;
+
+// ,,Find first'' oraz ,,Find second'' w bitsecie:
+vector<int> ListBits(bitset<1005> bs) {
+  vector<int> result;
+  for (int pos = bs._Find_first(); pos != bs.size(); pos = bs._Find_next(pos)) {
+    result.push_back(pos);
+  }
+  return result;
+}
