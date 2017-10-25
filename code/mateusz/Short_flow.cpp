@@ -3,6 +3,7 @@
 /* jest mała (np. rzędu n), krótszy kod niż w przypadku dinica,               */
 /* fclear() nie trzeba przepisywać jeśli liczymy flow tylko raz, wynik        */
 /* do odzyskania jest w fflow[][]                                             */
+/* ODZYSKIWANIE NIE DZIAŁA, UŻYWAĆ DINICA !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  */
 const int fn=1007;
 vector <int> fgraf[fn];
 int flim[fn][fn];

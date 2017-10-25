@@ -1,120 +1,115 @@
 /* DINIC O(n^2*m) lub O(MAXFLOW*(n+m)).                                       */
-/* LINIOWA PAMIĘĆ - główny powód stosowania, dla grafów z krawędziami         */
-/* jednostykowymi działa w O(m*sqrt(n))                                       */
-/* Szybkie, można ryzykować, w razie czego shufflowac krawędzie.              */
-/* Używamy funkcji add_edge().                                                */
-/* Używamy funkcji dinic(), która modyfikuje krawędzie i zwraca wartość       */
-/* maksymalnego przepływu.                                                    */
-/* Na krawędziach zostaje flow, do odtwarzania wyniku.                        */
+/* Dla grafów z krawędziami jednostykowymi działa w O(m*sqrt(n)).             */
 
-struct flow {
-  struct edge {  // Można dodawać atrybuty w celu identyfikacji krawędzi.
-    int cel = 0;
-    ll lim = 0;
-    ll flow = 0;
-    edge* odw;
-  };
+using ll=long long;
 
-  //liczba wierzcholkow, numer zrodla i numer ujscia, numerowane od 1
-  int n, zr, uj;
-
-  vector<vector<edge*>> graf;
-  vector<vector<edge*>> dgraf;
-  vector<int> odl;
-
-  flow(){}
-
-  flow(int vertex_limit) {
-    graf.resize(vertex_limit + 1);
-    dgraf.resize(vertex_limit + 1);
-    odl.resize(vertex_limit + 1, 0);
-  }
-
-  // Dodaje krawędź od @v do @u o przepustowosci @lim.
-  void add_edge(int v, int u, ll lim, bool bi_dir) {
-    edge* wte = new edge();
-    edge* wtamte = new edge();
-    wte->odw = wtamte;
-    wtamte->odw = wte;
-    wte->lim = lim;
-    if (bi_dir) wtamte->lim = lim;
-    wte->cel = u;
-    wtamte->cel = v;
-    graf[v].push_back(wte);
-    graf[u].push_back(wtamte);
-  }
-
-  // progarm używa się wewnętrznie, nie tykać
-  void clear() {
-    for (int i = 1; i <= n; i++) {
-      odl[i] = 0;
-      dgraf[i].clear();
-    }
-  }
-
-  // progarm używa się wewnętrznie, nie tykać
-  void bfs() {
-    queue<int> kol;
-    int u;
-    kol.push(zr);
-    odl[zr] = 1;
-    while (!kol.empty()) {
-      u = kol.front();
-      kol.pop();
-      for (int i = 0; i < graf[u].size(); i++) {
-        if (!odl[graf[u][i]->cel] && graf[u][i]->lim) {
-          odl[graf[u][i]->cel] = odl[u] + 1;
-          kol.push(graf[u][i]->cel);
-        }
-        if (odl[graf[u][i]->cel] == odl[u] + 1)
-          dgraf[u].push_back(graf[u][i]);
-      }
-    }
-  }
-
-  // progarm używa się wewnętrznie, nie tykać
-  ll dfs(int v, ll mini) {
-    if (v==uj) return mini;
-    for (int i = 0; i < dgraf[v].size(); i++) {
-      if (dgraf[v][i]->lim) {
-        ll ret = dfs(dgraf[v][i]->cel, min(mini, dgraf[v][i]->lim));
-        if (!ret) {
-          swap(dgraf[v][i], dgraf[v].back());
-          dgraf[v].pop_back();
-          i--;
-          continue;
-        }
-        dgraf[v][i]->lim -= ret;
-        dgraf[v][i]->odw->lim += ret;
-        dgraf[v][i]->flow += ret;
-        ll pom = min(dgraf[v][i]->flow, dgraf[v][i]->odw->flow);
-        dgraf[v][i]->flow -= pom;
-        dgraf[v][i]->odw->flow -= pom;
-        return ret;
-      } else {
-        swap(dgraf[v][i], dgraf[v].back());
-        dgraf[v].pop_back();
-        i--;
-      }
-    }
-    return 0;
-  }
-
-  ll dinic() {
-    ll ret = 0;
-    while (true) {
-      clear();
-      bfs();
-      ll bier1 = 0;
-      while (true) {
-        // stała większa niż jakakolwiek przepustowość
-        ll bier2 = dfs(zr, 1000 * 1000 * 1000);
-        if (!bier2) break;
-        bier1 += bier2;
-      }
-      if (!bier1) break;
-      ret += bier1;
-    }
-    return ret;
-  }
+struct flow
+{
+	int n, zr, uj;
+	vector<vector<pair<int,pair<ll*,ll*>>>> graf;
+	vector<vector<pair<int,pair<ll*,ll*>>>> dgraf;
+	vector<vector<ll>> ori;//do odzyskiwania flowu
+	vector<int> odl;
+	flow(){}
+	flow(int vertex_limit) {
+		graf.resize(vertex_limit + 1);
+		dgraf.resize(vertex_limit + 1);
+		odl.resize(vertex_limit + 1, 0);
+		ori.resize(vertex_limit + 1);//do odzyskiwania flowu
+	}
+	bool iszero(ll v) {
+		return (!v);//zmienic dla dabli
+	}
+	void add_edge(int v, int u, ll lim, bool bi_dir=false) {
+		ll *a=new ll(lim);
+		ll *b=new ll(lim*bi_dir);
+		graf[v].push_back({u,{a, b}});
+		graf[u].push_back({v,{b, a}});
+		ori[v].push_back(lim);//do odzyskiwania flowu
+		ori[u].push_back(lim*bi_dir);//do odzyskiwania flowu
+	}
+	void bfs() {
+		for (int i=1; i<=n; i++) {
+			odl[i]=0;
+			dgraf[i].clear();
+		}
+		queue <int> kol;
+		kol.push(zr);
+		odl[zr]=1;
+		while(!kol.empty()) {
+			int v=kol.front();
+			kol.pop();
+			for (auto i : graf[v]) {
+				if (!odl[i.first] && !iszero(*i.second.first)) {
+					odl[i.first]=odl[v]+1;
+					kol.push(i.first);
+				}
+				if (odl[i.first]==odl[v]+1 && !iszero(*i.second.first))
+					dgraf[v].push_back(i);
+			}
+		}
+	}
+	ll dfs(int v, ll lim) {
+		if (v==uj)
+			return lim;
+		ll ret=0;
+		for (int i=0; i<(int)dgraf[v].size() && !iszero(lim); i++) {
+			auto &j=dgraf[v][i];
+			ll wez=0;
+			if (!iszero(*j.second.first))
+				wez=dfs(j.first, min(*j.second.first, lim));
+			if (iszero(wez)) {
+				swap(dgraf[v][i], dgraf[v].back());
+				dgraf[v].pop_back();
+				i--;
+				continue;
+			}
+			ret+=wez;
+			(*j.second.first)-=wez;
+			(*j.second.second)+=wez;
+			lim-=wez;
+		}
+		return ret;
+	}
+	ll dinic(int nn, int zrzr, int ujuj) {
+		n=nn;
+		zr=zrzr;
+		uj=ujuj;
+		ll ret=0;
+		while(1) {
+			bfs();
+			ll sta=ret;
+			if (iszero(sta-(ret+=dfs(zr, 1e18))))//cos wiekszego niz maxflow, uwaga na overflow
+				break;
+		}
+		return ret;
+	}
+	//ponizszych nie trzeba przepisywac
+	void clear_memory() {
+		for (int i=1; i<=n; i++)
+			for (auto j : graf[i])
+				delete(j.second.first);
+	}
+	//do ponizszych najpierw uzyc dinic()
+	vector <int> cut() {
+		vector <int> ret;
+		bfs();
+		for (int i=1; i<=n; i++)
+			if (odl[i])
+				ret.push_back(i);
+		return ret;
+	}
+	map<pair<int,int>,ll> get_flowing() {//tam gdzie plynie 0 moze nie byc zainicjowane
+		map<pair<int,int>,ll> ret;
+		for (int i=1; i<=n; i++)
+			for (int j=0; j<(int)graf[i].size(); j++)
+				if ((*graf[i][j].second.first)<ori[i][j])
+					ret[{i,graf[i][j].first}]+=ori[i][j]-(*graf[i][j].second.first);
+		for (auto i : ret) {
+			ll x=min(i.second, ret[{i.first.second,i.first.first}]);
+			ret[i.first]-=x;
+			ret[{i.first.second,i.first.first}]-=x;
+		}
+		return ret;
+	}
 };
