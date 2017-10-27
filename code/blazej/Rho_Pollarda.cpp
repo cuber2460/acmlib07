@@ -48,7 +48,7 @@ bool test(ll n) {
           zlozona = false;
           break;
         }
-        x = (x*x)%n;
+        x = mnoz(x, x, n);
       }
       if (zlozona)
         return false;
