@@ -390,7 +390,7 @@ int main(int argc, char * argv[]) {
 		Big a = rig(n);
 		cout << "assert my_sqrt(" << a << ") == " << sqrt(a) << "\n";
 	}
-	puts("print(\"OK. Testy mowia, ze Mirosz ma downa. Accepted.\")");
+	puts("print(\"OK. Testy mowia, ze Kamil ma downa. Accepted.\")");
 	//~ srand(atoi(argv[1]));
 	//~ for(int i = 0; i < 100; ++
 	
