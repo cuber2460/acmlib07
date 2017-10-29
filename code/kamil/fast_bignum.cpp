@@ -345,48 +345,93 @@ struct Big {
     }
 };
 
-Big random_Big(int n) {
-  string s;
-  for (int i = 0; i < n; i++) {
-    s += rand() % 10 + '0';
-  }
-  return Big(s);
+Big rig(int n) {
+	n = 1 + rand() % n;
+	string s;
+	for (int i = 0; i < n; i++) {
+		s += rand() % 10 + '0';
+	}
+	if(s[0] == '0') ++s[0];
+	return Big(s);
 }
 
+//~ void python(string s) {
+	//~ bool static started = false;
+	//~ if(!started) {
+		//~ freopen("big.py", "w", stdout);
+		//~ started = true;
+	//~ }
+	//~ cout << "print(" + s + ")\n";
+//~ }
+
+#define OP(_a, op, _b) { Big a = _a; Big b = _b; cout << "assert " << a << " " #op " " << b << " == " << a op b << "\n"; }
 // random tests
-int main() {
-  for (int i = 0; i < 1000; i++) {
-    cout << i << endl;
-    int n = rand() % 100 + 1;
-    Big a = random_Big(n);
-    Big res = sqrt(a);
-    Big xx = res * res;
-    Big yy = (res + 1) * (res + 1);
+int main(int argc, char * argv[]) {
+	puts("def my_sqrt(n):\n\
+	low = 0L\n\
+	high = 0L\n\
+	high += n\n\
+	while low < high:\n\
+		x = (low + high + 1) / 2\n\
+		if x * x > n:\n\
+			high = x - 1\n\
+		else:\n\
+			low = x\n\
+	return low");
+	//~ cout << sqrt(Big(string("1112810534374622889729379941637640041105754117307490349553819505700"))) << "\n";
+	//~ return 0;
+	srand(42);
+	const int n = 200;
+	for(int i = 0; i < 1000; ++i) {
+		OP(rig(n), +, rig(n));
+		OP(rig(n), -, rig(n));
+		OP(rig(n), *, rig(n));
+		OP(rig(n), /, rig(n));
+		Big a = rig(n);
+		cout << "assert my_sqrt(" << a << ") == " << sqrt(a) << "\n";
+	}
+	puts("print(\"OK. Testy mowia, ze Mirosz ma downa. Accepted.\")");
+	//~ srand(atoi(argv[1]));
+	//~ for(int i = 0; i < 100; ++
+	
+	
+	//~ OP(Big(123), +, Big(213));
+	//~ OP(random_Big(5), *, random_Big(100));
+	//~ OP(Big(5), -, Big(3));
+	//~ return 0;
+	//~ srand(42);
+	//~ for(int i = 0; i < 1000; i++) {
+    //~ cout << i << endl;
+    //~ int n = rand() % 100 + 1;
+    //~ Big a = random_Big(n);
+    //~ Big res = sqrt(a);
+    //~ Big xx = res * res;
+    //~ Big yy = (res + 1) * (res + 1);
 
-    if (xx > a || yy <= a) {
-      cout << a << " " << res << endl;
-      break;
-    }
+    //~ if (xx > a || yy <= a) {
+      //~ cout << a << " " << res << endl;
+      //~ break;
+    //~ }
 
-    int m = rand() % n + 1;
-    Big b = random_Big(m) + 1;
-    res = a / b;
-    xx = res * b;
-    yy = b * (res + 1);
+    //~ int m = rand() % n + 1;
+    //~ Big b = random_Big(m) + 1;
+    //~ res = a / b;
+    //~ xx = res * b;
+    //~ yy = b * (res + 1);
 
-    if (xx > a || yy <= a) {
-      cout << a << " " << b << " " << res << endl;
-      break;
-    }
-  }
+    //~ if (xx > a || yy <= a) {
+      //~ cout << a << " " << b << " " << res << endl;
+      //~ break;
+    //~ }
+  //~ }
 
-  Big a = random_Big(10000);
-  Big b = random_Big(2000);
-  clock_t start = clock();
-  Big c = a / b;
-  fprintf(stdout, "time=%.3lfsec\n", 0.001 * (clock() - start));
+  //~ Big a = random_Big(10000);
+  //~ Big b = random_Big(2000);
+  //~ clock_t start = clock();
+  //~ Big c = a / b;
+  //~ fprintf(stdout, "time=%.3lfsec\n", 0.001 * (clock() - start));
 
-  Big x = 5;
-  x = 6;
-  cout << x << endl;
+  //~ Big x = 5;
+  //~ x = 6;
+  //~ cout << x << endl;
 }
