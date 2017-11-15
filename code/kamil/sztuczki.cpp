@@ -77,3 +77,11 @@ vector<int> ListBits(bitset<1005> bs) {
 secik.max_load_factor(0.25); // ratio liczba_elementow / liczba_bucketow, domyslnie 1.0 (ustaw na INF, jesli chcesz uzywac tylko reserve)
 secik.reserve(1<<15); // maksuje liczbe bucketow do danej liczby, zalecana potega 2, np. 1<<22 dla n=1e6
 int secik.bucket_count(); // zwraca obecna liczbe bucketow, sluzy do testowania 
+
+// limit_denominator
+import fractions
+n = int(input())
+for i in range(n):
+  a = fractions.Fraction(input())
+  b = a.limit_denominator(1000 * 1000 * 1000)
+  print(b.numerator, b.denominator)
