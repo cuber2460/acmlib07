@@ -1,11 +1,9 @@
 constexpr bool persistent = true;
 
 struct Data {
-  // ???
   Data() = default;
   Data(/* Konstruktor dla pojedynczego wierzcholka. */) {}
   Data(const Data&) = default;
-
   bool NeedsTouch() { return false; }
   void Touch(Data* left, Data* right)  { assert(NeedsTouch()); }
   // Beware: left and right might not be touched!
@@ -13,7 +11,6 @@ struct Data {
 };
 
 struct Node;
-
 struct N {
   int v;
   N(int v) : v(v) {}
