@@ -20,3 +20,38 @@ int Main() {
   assert(a == 1206605802 /* Tu wkleić wartość po uruchomieniu u siebie. */);
   return 0;
 }
+
+// 3. Sprawdzanie czasu.
+int Main() {
+  while (clock() <= 0.690 * CLOCKS_PER_SEC);
+  // Sprawdzić czy uruchomienie zajęło dokładnie 690ms.  Jeśli nie da się
+  // sprawdzić dokładnego czasu wykonania, to można zbinsearchować time limit.
+  return 0;
+}
+
+// 4. Sprawdzić czy time() zwraca różne wartości pomiędzy uruchomieniami.
+int Main() {
+  switch (time(NULL) % 3) {
+    case 0:
+      while (true);  // Daj TLE.
+    case 1:
+      assert(false);  // Daj RE.
+    case 2:
+      printf("Daj WA.\n");
+  }
+  return 0;
+}
+
+// 5. Przetestować czy kompresja działa.
+// (...) <- Przepisać kompresję.
+int Main() {
+  // Ustawić false do wygenerowania kodu, a true do zweryfikowania kompresji.
+  bool czy_uruchomienie = false;
+  Compress compress;
+  for (int i = 1; i <= 100; i++) {
+    const uint64_t result = compress.Data(62, i * i);
+    if (czy_uruchomienie) {
+      assert(result == i * i);
+    }
+  }
+}
