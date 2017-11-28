@@ -34,6 +34,7 @@ sim dor(const c&) { ris; }
 int main() {
   int a = 81281;
   set<int> b{3, 5, 7};
-  debug() << imie(a) << imie(b) << imie(vector<int>{1, 2, 3}) << 10;
+  debug() << imie(a) imie(b) imie(vector<int>{1, 2, 3}) << 10;
+  // -std=c++11 -g -DLOCAL -Wshadow -Wall -fsanitize=address -D_GLIBCXX_DEBUG
   return 0;
 }
