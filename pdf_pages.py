@@ -279,22 +279,25 @@ class PdfPages(object):
         Character(**self.options['date_decorations']),
         self.date.strftime('%Y-%m-%d'), self.footer_x, self.footer_y)
 
-  def _PrintSummaryLetter(self, index, letter):
+  def _PrintSummaryLetter(self, index, letter, is_highlighted):
     width = self.right_width
     height = width
     margin = 0.1 * width
     x = self.right_x
     y = self.right_y + (self.right_width + margin) * index
     # Background.
-    self.context.save()
-    self.context.rectangle(x, y, width, width)
-    self.context.set_source_rgba(*self.options['big_letter_colors'][letter])
-    self.context.fill()
-    self.context.restore()
+    if is_highlighted:
+      self.context.save()
+      self.context.rectangle(x, y, width, width)
+      self.context.set_source_rgba(*self.options['big_letter_colors'][letter])
+      self.context.fill()
+      self.context.restore()
     # Big letter.
     self.context.save()
-    Character('', **self.options['big_letter_font']) \
-        .ApplyStyleToContext(self.context, self.fonts)
+    style = Character('', **self.options['big_letter_font'])
+    if not is_highlighted:
+      style.SetColor(self.options['big_letter_colors'][letter])
+    style.ApplyStyleToContext(self.context, self.fonts)
     self.context.translate(x, y)
     te_xbearing, te_ybearing, te_width, te_height, te_xadvance, te_yadvance = \
         self.context.text_extents(letter)
@@ -320,8 +323,7 @@ class PdfPages(object):
     summary_letters = MakeSummaryLetters(self.summary_data)
     letters = "CKMRB"
     for i in range(len(letters)):
-      if letters[i] in summary_letters:
-        self._PrintSummaryLetter(i, letters[i])
+      self._PrintSummaryLetter(i, letters[i], letters[i] in summary_letters)
 
   def _NextPage(self):
     self._PrintFrames()
