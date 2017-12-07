@@ -363,9 +363,11 @@ class PdfPages(object):
     self.context.restore()
     # Text.
     self.context.save()
-    self.context.move_to(x, y + self.font_ascent)
     style.ApplyStyleToContext(self.context, self.fonts)
-    self.context.show_text(text)
+    for index in range(len(text)):
+      self.context.move_to(x + self.font_max_x_advance * index,
+                           y + self.font_ascent)
+      self.context.show_text(text[index])
     self.context.restore()
 
   def _PrintMonoStyleText(self, style, text, column, line, char):
