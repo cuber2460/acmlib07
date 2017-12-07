@@ -1,5 +1,39 @@
 import cairo
 import math
+import os
+
+def GetAlgorithmFromFilename(filename):
+  algorithm = os.path.basename(filename)
+  if algorithm.endswith('.cpp'):
+    algorithm = algorithm[:-4]
+  return algorithm
+
+def GetNameFromFilename(filename):
+  dirname = os.path.dirname(filename)
+  if dirname == "":
+    return "C"
+  elif dirname == "kamil":
+    return "K"
+  elif dirname == "marek":
+    return "M"
+  elif dirname == "mateusz":
+    return "R"
+  elif dirname == "blazej":
+    return "B"
+  else:
+    assert False
+
+def MakeSummaryText(summary_data):
+  algorithms = []
+  for title in summary_data:
+    algorithms.append(GetAlgorithmFromFilename(title))
+  return ', '.join(algorithms)
+
+def MakeSummaryLetters(summary_data):
+  letters = set()
+  for title in summary_data:
+    letters.add(GetNameFromFilename(title))
+  return letters
 
 class PdfPagesError(Exception): pass
 
@@ -13,6 +47,7 @@ class Character(object):
     self.SetColor(color)
     self.SetBgColor(bg_color)
     self.SetBorderColor(border_color)
+    self.SetTitle(None)
 
   def __repr__(self):
     return self.character
@@ -37,6 +72,9 @@ class Character(object):
   def SetBorderColor(self, border_color):
     self.border_color = border_color
 
+  def SetTitle(self, title):
+    self.title = title
+
   def GetCharacter(self):
     return self.character
 
@@ -45,6 +83,13 @@ class Character(object):
            self.is_italic == character.is_italic and \
            self.color == character.color and \
            self.bg_color == character.bg_color
+
+  def HasTitle(self):
+    return self.title is not None
+
+  def GetTitle(self):
+    assert self.HasTitle()
+    return self.title
 
   def _CairoFontSlant(self):
     if self.is_italic:
@@ -81,11 +126,11 @@ class PdfPages(object):
          * characters_in_a_row  :: int
          * width                :: double, in millimeters
          * height               :: double, in millimeters
-         * margin_top           :: double
-         * margin_bottom        :: double, in millimeteres
-         * margin_left          :: double, in millimeteres
-         * margin_middle        :: double, in millimeteres
-         * margin_right         :: double, in millimeteres
+         * margin_top           :: double, in millimeters
+         * margin_bottom        :: double, in millimeters
+         * margin_left          :: double, in millimeters
+         * margin_middle        :: double, in millimeters
+         * margin_right         :: double, in millimeters
 
        +---------------------------------------------+     ---  ---
        |                                             |      |    | top margin
@@ -114,6 +159,9 @@ class PdfPages(object):
     self._InitCairo()
     self._InitLineData()
     self._ComputeFooterMeasurements()
+    self._ComputeHeaderMeasurements()
+    self._ComputeRightMeasurements()
+    self.summary_data = []
 
   def __del__(self):
     self._NextPage()
@@ -137,6 +185,17 @@ class PdfPages(object):
         self.margin_bottom / 2 - self.font_height / 2
     self.footer_x = self.margin_left
     self.footer_width = self.width - self.margin_left - self.margin_right
+
+  def _ComputeHeaderMeasurements(self):
+    self.header_y = self.margin_top / 2 - self.font_height / 2
+    self.header_x = self.margin_left
+    self.header_width = self.width - self.margin_left - self.margin_right
+
+  def _ComputeRightMeasurements(self):
+    big_letter_size_percent = self.options['big_letter_box_percent']
+    self.right_x = self.width - self.margin_right * big_letter_size_percent
+    self.right_y = self.margin_top
+    self.right_width = self.margin_right * big_letter_size_percent
 
   def _InitCairo(self):
     self.surface = cairo.PDFSurface(
@@ -220,12 +279,58 @@ class PdfPages(object):
         Character(**self.options['date_decorations']),
         self.date.strftime('%Y-%m-%d'), self.footer_x, self.footer_y)
 
+  def _PrintSummaryLetter(self, index, letter):
+    width = self.right_width
+    height = width
+    margin = 0.1 * width
+    x = self.right_x
+    y = self.right_y + (self.right_width + margin) * index
+    # Background.
+    self.context.save()
+    self.context.rectangle(x, y, width, width)
+    self.context.set_source_rgba(*self.options['big_letter_colors'][letter])
+    self.context.fill()
+    self.context.restore()
+    # Big letter.
+    self.context.save()
+    Character('', **self.options['big_letter_font']) \
+        .ApplyStyleToContext(self.context, self.fonts)
+    self.context.translate(x, y)
+    te_xbearing, te_ybearing, te_width, te_height, te_xadvance, te_yadvance = \
+        self.context.text_extents(letter)
+    scale = (height / te_height) * self.options['big_letter_size_percent']
+    new_height = height / scale
+    border = (new_height - te_height) / 2
+    self.context.scale(scale, scale)
+    te_xbearing, te_ybearing, te_width, te_height, te_xadvance, te_yadvance = \
+        self.context.text_extents(letter)
+    y_space = new_height - te_height
+    self.context.move_to(border + te_xbearing, y_space / 2 - te_ybearing)
+    self.context.show_text(letter)
+    self.context.restore()
+
+  def _PrintPageSummary(self):
+    summary_text = MakeSummaryText(self.summary_data)
+    self._PrintMonoStyleTextXY(
+        Character(**self.options['page_summary_decorations']),
+        summary_text,
+        self.header_x + self.header_width \
+            - len(summary_text) * self.font_max_x_advance,
+        self.header_y)
+    summary_letters = MakeSummaryLetters(self.summary_data)
+    letters = "CKMRB"
+    for i in range(len(letters)):
+      if letters[i] in summary_letters:
+        self._PrintSummaryLetter(i, letters[i])
+
   def _NextPage(self):
     self._PrintFrames()
     self._PrintPageNumber()
     self._PrintDate()
+    self._PrintPageSummary()
     self.context.show_page()
     self.pages_printed += 1
+    self.summary_data = []
 
   def _NextColumn(self):
     self.columns_printed += 1
@@ -268,9 +373,17 @@ class PdfPages(object):
         self.column_xs[column] + char * self.font_max_x_advance,
         self.column_y + line * self.font_height)
 
+  def _AddSummaryData(self, title):
+    if self.summary_data and self.summary_data[-1] == title:
+      pass
+    else:
+      self.summary_data.append(title)
+
   def _AddLine(self, line):
     style_fragments = []
     for character in line:
+      if character.HasTitle():
+        self._AddSummaryData(character.GetTitle())
       if style_fragments and style_fragments[-1][-1].EqualStyle(character):
         style_fragments[-1].append(character)
       else:

@@ -1,5 +1,6 @@
 import datetime
 import formatter
+import os
 import pdf_pages
 import pygments
 import pygments.lexers
@@ -38,6 +39,8 @@ class CodeParser(object):
         title_text = [space] + title_text
       else:
         title_text = title_text + [space]
+    for c in title_text:
+      c.SetTitle(title)
     return title_text
 
   def _AddOutputLines(self, title, output, options):
@@ -46,6 +49,7 @@ class CodeParser(object):
     self.long_lines[-1] = self._GenerateTitleLine(title, options)
     self.long_lines.append([])
     for character in output:
+      character.SetTitle(title)
       if character.GetCharacter() == '\n':
         self.long_lines.append([])
       elif character.GetCharacter() == '\r':
@@ -82,7 +86,8 @@ class CodeParser(object):
 
   def AddCodeFile(self, filename, options):
     with open(filename) as f:
-      self.AddSource(filename, f.read(), options)
+      title = os.path.relpath(filename, options["code_dir"])
+      self.AddSource(title, f.read(), options)
 
   def GeneratePdf(self, options):
     pages = pdf_pages.PdfPages(options)
