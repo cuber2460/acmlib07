@@ -55,3 +55,32 @@ int Main() {
     }
   }
 }
+
+// 6. Sprawdzić float128.
+// Oczekiwany output: 47.610000000.
+int Main() {
+  __float128 x = 6.9;
+  printf("%.9lf\n", (double)(x*x));
+  return 0;
+}
+
+// 7. Sprawdzić ordered_seta.
+#include <bits/stdc++.h>
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+
+using namespace __gnu_pbds;
+using namespace std;
+
+template <typename T>
+using ordered_set =
+    tree<T, null_type, less<T>, rb_tree_tag, tree_order_statistics_node_update>;
+
+ordered_set<int> s;
+
+int Main() {
+  s.insert(1);
+  s.insert(2);
+  cout << s.order_of_key(1) << endl;    // Out: 0.
+  cout << *s.find_by_order(1) << endl;  // Out: 2.
+}
