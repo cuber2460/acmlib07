@@ -1,9 +1,12 @@
 import datetime
 import formatter
+import math
 import os
 import pdf_pages
 import pygments
 import pygments.lexers
+
+from latex_generator import GeneratePdfDocumentForTex
 
 # Returns black or white RGB color of text on the given background color.
 def _AntiColor(color):
@@ -11,6 +14,55 @@ def _AntiColor(color):
     return (0, 0, 0)
   else:
     return (1, 1, 1)
+
+LONG_LINE_LETTERS = 0
+LONG_LINE_TEX_DOCUMENT = 1
+
+class LongLine(object):
+  def __init__(self, line_type, letters=None, tex_filename=None):
+    if letters is None:
+      letters = []
+    self.line_type_ = line_type
+    self.letters_ = letters
+    self.tex_filename_ = tex_filename
+
+  def Type(self):
+    return self.line_type_
+
+  def Letters(self):
+    assert self.line_type_ == LONG_LINE_LETTERS
+    return self.letters_
+
+  def TexFilename(self):
+    assert self.line_type_ == LONG_LINE_TEX_DOCUMENT
+    return self.tex_filename_
+
+SHORT_LINE_LETTERS = 0
+SHORT_LINE_PDF_PAGE = 1
+
+class ShortLine(object):
+  def __init__(self, line_type, height=1, letters=None, pdf_page=None):
+    if letters is None:
+      letters = []
+    self.line_type_ = line_type
+    self.height_ = height
+    self.letters_ = letters
+    self.pdf_page_ = pdf_page
+
+  def Type(self):
+    return self.line_type_
+
+  def Height(self):
+    return self.height_
+
+  def Letters(self):
+    assert self.line_type_ == SHORT_LINE_LETTERS
+    return self.letters_
+
+  def PdfPage(self):
+    assert self.line_type_ == SHORT_LINE_PDF_PAGE
+    return self.pdf_page_
+
 
 class CodeParser(object):
   """List of options:
@@ -28,7 +80,7 @@ class CodeParser(object):
   """
   def __init__(self, options):
     self.cols = options['characters_in_a_row']
-    self.long_lines = [[]]
+    self.long_lines = []
 
   def _GenerateTitleLine(self, title, options):
     style = options['header_decorations']
@@ -41,39 +93,75 @@ class CodeParser(object):
         title_text = title_text + [space]
     for c in title_text:
       c.SetTitle(title)
-    return title_text
+    return LongLine(LONG_LINE_LETTERS, letters=title_text)
 
   def _AddOutputLines(self, title, output, options):
-    if self.long_lines[-1]:
-      self.long_lines.append([])
-    self.long_lines[-1] = self._GenerateTitleLine(title, options)
-    self.long_lines.append([])
+    next_line = LongLine(LONG_LINE_LETTERS)
     for character in output:
       character.SetTitle(title)
       if character.GetCharacter() == '\n':
-        self.long_lines.append([])
+        self.long_lines.append(next_line)
+        next_line = LongLine(LONG_LINE_LETTERS)
       elif character.GetCharacter() == '\r':
         pass
       elif character.GetCharacter() == '\t':
         character.SetCharacter(' ')
         for i in range(options.get('expandtab', 2)):
-          self.long_lines[-1].append(character)
+          next_line.Letters().append(character)
       else:
-        self.long_lines[-1].append(character)
+        next_line.Letters().append(character)
+    self.long_lines.append(next_line)
+    while self.long_lines and not self.long_lines[-1].Letters():
+      del self.long_lines[-1]
 
-  def _GetShortLines(self, options):
-    long_lines = list(self.long_lines)
-    if not long_lines[-1]:
-      long_lines = long_lines[:-1]
+  def _GetShortLines(self, options, row_height, column_width):
     right_arrow = pdf_pages.Character('↲', **options['right_wrap_decorations'])
     right_arrows = [right_arrow]
     left_arrow = pdf_pages.Character('↳', **options['left_wrap_decorations'])
     left_arrows = [left_arrow]
-    for line in long_lines:
-      while len(line) > self.cols:
-        yield line[:self.cols - len(right_arrows)] + right_arrows
-        line = left_arrows + line[self.cols - len(right_arrows):]
-      yield line
+    for line in self.long_lines:
+      if line.Type() == LONG_LINE_LETTERS:
+        l = line.Letters()
+        while len(l) > self.cols:
+          yield ShortLine(
+              SHORT_LINE_LETTERS,
+              letters=l[:self.cols - len(right_arrows)] + right_arrows)
+          l = left_arrows + l[self.cols - len(right_arrows):]
+        yield ShortLine(SHORT_LINE_LETTERS, letters=l)
+      elif line.Type() == LONG_LINE_TEX_DOCUMENT:
+        latex_options = options['latex_options']
+        latex_options['input_tex'] = line.TexFilename()
+        latex_options['width'] = column_width
+        document = GeneratePdfDocumentForTex(latex_options)
+        for page_id in range(document.get_n_pages()):
+          page = document.get_page(page_id)
+          rect = page.get_crop_box()
+          width = rect.x2 - rect.x1
+          scale = column_width / width
+          height = (rect.y2 - rect.y1) * scale
+          cnt_rows = math.ceil(height / row_height)
+          yield ShortLine(SHORT_LINE_PDF_PAGE, height=cnt_rows, pdf_page=page)
+      else:
+        assert False
+
+  def _SplitToColumns(self, options, short_lines, rows_per_column):
+    def FillColumn(column, size, rows_per_column):
+      while size < rows_per_column:
+        column.append(ShortLine(SHORT_LINE_LETTERS))
+        size += 1
+    size = 0
+    next_column = []
+    for line in short_lines:
+      h = line.Height()
+      if h + size > rows_per_column:
+        FillColumn(next_column, size, rows_per_column)
+        yield next_column
+        size = h
+        next_column = [line]
+      else:
+        size += h
+        next_column.append(line)
+    yield next_column
 
   def AddSource(self, title, code, options):
     code_lexer = pygments.lexers.get_lexer_by_name(options.get('lang', 'raw'))
@@ -85,16 +173,32 @@ class CodeParser(object):
     self._AddOutputLines(title, code_formatter.GetOutput(), options)
 
   def AddCodeFile(self, filename, options):
-    with open(filename) as f:
-      title = os.path.relpath(filename, options["code_dir"])
+    title = os.path.relpath(filename, options["code_dir"])
+    self.long_lines.append(self._GenerateTitleLine(title, options))
+    if options['lang'] == 'LaTeX':
+      self.long_lines.append(
+          LongLine(LONG_LINE_TEX_DOCUMENT, tex_filename=filename))
+    else:
+      f = open(filename)
       self.AddSource(title, f.read(), options)
 
   def GeneratePdf(self, options):
     pages = pdf_pages.PdfPages(options)
-    rows_per_page = pages.GetRowsPerPage()
-    short_lines = tuple(self._GetShortLines(options))
+    rows_per_column = pages.GetRowsPerColumn()
+    number_of_columns = pages.GetNumberOfColumns()
+    row_height = pages.GetRowHeight()
+    column_width = pages.GetColumnWidth()
+    columns = tuple(self._SplitToColumns(options, self._GetShortLines(
+        options, row_height, column_width), rows_per_column))
     pages.SetDate(datetime.datetime.today())
     pages.SetTotalNumberOfPages(
-        (len(short_lines) + rows_per_page - 1) // rows_per_page)
-    for short_line in short_lines:
-      pages.AddLine(short_line)
+        (len(columns) + number_of_columns - 1) // number_of_columns)
+    for column in columns:
+      for short_line in column:
+        if short_line.Type() == SHORT_LINE_LETTERS:
+          assert short_line.Height() == 1
+          pages.AddLine(short_line.Letters())
+        elif short_line.Type() == SHORT_LINE_PDF_PAGE:
+          pages.AddPdfPage(short_line.Height(), short_line.PdfPage())
+        else:
+          assert False

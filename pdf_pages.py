@@ -6,6 +6,8 @@ def GetAlgorithmFromFilename(filename):
   algorithm = os.path.basename(filename)
   if algorithm.endswith('.cpp'):
     algorithm = algorithm[:-4]
+  elif algorithm.endswith('.tex'):
+    algorithm = algorithm[:-4]
   return algorithm
 
 def GetNameFromFilename(filename):
@@ -326,6 +328,8 @@ class PdfPages(object):
       self._PrintSummaryLetter(i, letters[i], letters[i] in summary_letters)
 
   def _NextPage(self):
+    if self.pages_printed == self.total_number_of_pages:
+      return
     self._PrintFrames()
     self._PrintPageNumber()
     self._PrintDate()
@@ -340,9 +344,9 @@ class PdfPages(object):
       self._NextPage()
       self.columns_printed = 0
 
-  def _NextLine(self):
-    self.lines_printed += 1
-    if self.lines_printed == self.row_limit:
+  def _NextLine(self, jump=1):
+    self.lines_printed += jump
+    if self.lines_printed >= self.row_limit:
       self._NextColumn()
       self.lines_printed = 0
 
@@ -402,8 +406,17 @@ class PdfPages(object):
       characters_processed += len(text)
     self._NextLine()
 
-  def GetRowsPerPage(self):
-    return self.row_limit * self.number_of_columns
+  def GetRowsPerColumn(self):
+    return self.row_limit
+
+  def GetNumberOfColumns(self):
+    return self.number_of_columns
+
+  def GetRowHeight(self):
+    return self.font_height
+
+  def GetColumnWidth(self):
+    return self.column_width
 
   def SetDate(self, date):
     self.date = date
@@ -417,3 +430,51 @@ class PdfPages(object):
     else:
       self._AddLine(line[:self.characters_in_a_row])
       self.AddLine(line[self.characters_in_a_row:])
+
+  def AddPdfPage(self, rowspan, pdf_page):
+    if rowspan > self.row_limit:
+      rowspan = self.row_limit
+    self.context.save()
+    x = self.column_xs[self.columns_printed]
+    y = self.column_y + self.lines_printed * self.font_height
+    width = self.GetColumnWidth()
+    height = rowspan * self.GetRowHeight()
+    rect = pdf_page.get_crop_box()
+    x2 = rect.x1
+    y2 = rect.y1
+    width2 = rect.x2 - x2
+    height2 = rect.y2 - y2
+    extra_height = height - height2 * width / width2
+    self.context.rectangle(x, y, width, height)
+    self.context.clip()
+    self.context.translate(x, y + max(0, extra_height / 2))
+    self.context.scale(width, width)
+    self.context.save()
+    self.context.scale(1 / width2, 1 / width2)
+    self.context.translate(-x2, -y2)
+    pdf_page.render(self.context)
+    self.context.restore()
+    if extra_height < -0.01:
+      message = "UCIĘTY FRAGMENT"
+      self.context.save()
+      self.context.set_source_rgba(1, 0, 0, 0.5)
+      self.context.paint()
+      self.context.set_source_rgba(1, 0, 0, 1)
+      te_xbearing, te_ybearing, te_width, te_height, te_xadvance, te_yadvance = \
+          self.context.text_extents(message)
+      scale = 1 / te_width
+      new_width = 1 / scale
+      self.context.scale(scale, scale)
+      te_xbearing, te_ybearing, te_width, te_height, te_xadvance, te_yadvance = \
+          self.context.text_extents(message)
+      W = new_width
+      H = height / width / scale
+      self.context.translate(W / 2, H / 2)
+      self.context.rotate(-math.pi / 4);
+      self.context.translate(-W / 2, -H / 2)
+      self.context.move_to((W - te_width) / 2 - te_xbearing,
+                           (H - te_height) / 2 - te_ybearing)
+      self.context.show_text(message)
+      self.context.restore()
+    self.context.restore()
+    self._NextLine(rowspan)

@@ -61,11 +61,23 @@ options = {
     'is_italic': True,
     'color': (0, 0, 0),
   },
+
+  'latex_options': {
+    'input_tex': "???",
+    'width': "???",
+    'zoom': 2.5,
+    'border': (5,   # Left.
+               5,   # Bottom.
+               5,   # Right.
+               5),  # Top.
+  },
 }
 
 def CheckFileType(filename):
   if filename.endswith('.cpp'):
     return (filename, 'C++', 'default')
+  elif filename.endswith('.tex'):
+    return (filename, 'LaTeX', 'default')
   else:
     return ()
 
