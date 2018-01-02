@@ -1,41 +1,30 @@
 struct Compress {
   static unsigned char data[];
-  int position = -1;
-  int left = 0;
+  int pos = -1, left = 0;
 
   uint64_t Data(int bits, uint64_t x = 0) {
-    uint64_t result = 0;
     assert(1 <= bits and bits <= 64);
-    assert(bits == 64 or x < (1llu << bits));
-    if (left > 0) {
-      const int b = min(left, bits);
-      bits -= b;
-      left -= b;
-      #define MASKA(x, y) (x & ((1 << (y)) - 1))
-      result = (uint64_t) (MASKA(data[position] >> left, b)) << bits;
-      data[position] |= MASKA(x >> bits, b) << left;
-      #undef MASKA
+    for (int i = 0; i < bits; i++) {
+      if (left-- == 0) {
+        pos++;
+        left = 7;                             // Jeśli nie UTF-8.
+        left = 5 * !!(pos % 6);               // Jeśli UTF-8.
+        data[pos] |= 252 - 124 * (left / 5);  // Jeśli UTF-8.
+      }
+      if (((x >> i) ^ (data[pos] >> left)) & 1) {
+        data[pos] ^= 1 << left;
+        x ^= 1llu << i;
+      }
     }
-    while (bits >= 8) {
-      bits -= 8;
-      position++;
-      result |= (uint64_t) data[position] << bits;
-      data[position] = x >> bits;
-    }
-    if (bits > 0) {
-      left = 8 - bits;
-      position++;
-      result |= data[position] >> left;
-      data[position] = x << left;
-    }
-    return result;
+    return x;
   }
 
   void Print() {
     constexpr char code[] = "KaMylMaDoWnA";  // Length must be <= 16.
     std::ofstream out("compress.cpp");
     out << "unsigned char Compress::data[] = R\"" << code << "(";
-    out.write(reinterpret_cast<const char*>(data), position + 1);
+    while (left or (pos + 1) % 6) Data(1);  // Jeśli UTF-8.
+    out.write(reinterpret_cast<const char*>(data), pos + 1);
     out << ")" << code << "\";\n";
   }
 };
