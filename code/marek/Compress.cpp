@@ -1,6 +1,6 @@
 struct Compress {
   static unsigned char data[];  // Wersja bez UTF-8 używa 8/8 bitów.
-  int pos = -1, left = 0;       // Wersja z UTF-8 używa 31/48 bitów.
+  int pos = -1, left = 0;       // Wersja z UTF-8 używa 16/24 = 2/3 bitów.
 
   uint64_t Data(int bits, uint64_t x = 0) {
     assert(1 <= bits and bits <= 64);
@@ -8,8 +8,8 @@ struct Compress {
       if (left-- == 0) {
         pos++;
         left = 7;                             // Jeśli nie UTF-8.
-        left = 5 * !!(pos % 6);               // Jeśli UTF-8.
-        data[pos] |= 252 - 124 * (left / 5);  // Jeśli UTF-8.
+        left = 5 - 2 * !(pos % 3);            // Jeśli UTF-8.
+        data[pos] |= 368 - 48 * left;         // Jeśli UTF-8.
       }
       if (((x >> i) ^ (data[pos] >> left)) & 1) {
         data[pos] ^= 1 << left;
@@ -23,7 +23,7 @@ struct Compress {
     constexpr char code[] = "KaMylMaDoWnA";  // Length must be <= 16.
     std::ofstream out("compress.cpp");
     out << "unsigned char Compress::data[] = R\"" << code << "(";
-    while (left or (pos + 1) % 6) Data(1);  // Jeśli UTF-8.
+    while (left or (pos + 1) % 3) Data(1);  // Jeśli UTF-8.
     out.write(reinterpret_cast<const char*>(data), pos + 1);
     out << ")" << code << "\";\n";
   }
