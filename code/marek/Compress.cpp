@@ -1,6 +1,6 @@
 struct Compress {
-  static unsigned char data[];
-  int pos = -1, left = 0;
+  static unsigned char data[];  // Wersja bez UTF-8 używa 8/8 bitów.
+  int pos = -1, left = 0;       // Wersja z UTF-8 używa 31/48 bitów.
 
   uint64_t Data(int bits, uint64_t x = 0) {
     assert(1 <= bits and bits <= 64);
