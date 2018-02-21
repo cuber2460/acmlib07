@@ -16,7 +16,7 @@ class Pierwiastek {  // Jeśli kod ma być używany dla stałego p, to warto p
   T Pot(T a, T pot) const;  // Zwraca a**pot % p.
 
   T Licz(T a) const {  // Znajduje pierwiastek z a modulo p.
-    if (a == 0) return 0;               // Sprawdza, czy a jest resztą,
+    if (a == 0) return 0;               // Sprawdza, czy a jest resztą
     if (Pot(a, p / 2) != 1) return -1;  // kwadratową. Jeśli nie, zwraca -1.
     T z = Pot(c, m);
     T v = Pot(a, m / 2);
