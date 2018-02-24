@@ -11,10 +11,10 @@ ll fast_read() { // assumes no white spaces before a number
 	//~ if(is_neg) x *= -1;
 	return x;
 }
-void fast_print(ll x) { // or (ll x, char AFTER)
+void fast_print(ll x, char after = '\n') {
 	static char buf[53];
 	int i = 50;
-	buf[i+1] = '\n'; // or ' ' or AFTER
+	buf[i+1] = after;
 	//~ bool is_neg = x < 0;
 	//~ x = abs(x);
 	while(x || i == 50) {
