@@ -1,15 +1,18 @@
 // uncomment all lines if you need negative numbers
-ll fast_read() { // assumes no white spaces before a number
-	ll x = 0; // so you must use scanf("%d ", &n) with this
-	//~ bool is_neg = false;
-	while(true) {
-		char c = getchar_unlocked();
-		if(isdigit(c)) x = 10 * x + c - '0';
-		//~ else if(c == '-') is_neg = true;
-		else break;
+ll fast_read() {
+	#define CU c = getchar_unlocked()
+	ll x = 0;
+	char c;
+	while(isspace(CU));;;
+	//~ bool is_neg = c == '-';
+	//~ if(is_neg) CU;
+	while(isdigit(c)) {
+		x = 10 * x + c - '0';
+		CU;
 	}
 	//~ if(is_neg) x *= -1;
 	return x;
+	#undef CU
 }
 void fast_print(ll x, char after = '\n') {
 	static char buf[53];
