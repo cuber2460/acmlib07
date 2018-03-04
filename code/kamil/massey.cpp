@@ -1,40 +1,8 @@
 //~ https://en.wikipedia.org/wiki/Berlekamp%E2%80%93Massey_algorithm
-#pragma GCC optimize ("Ofast")
 #include <bits/stdc++.h>
 using namespace std;
-#define sim template < class c
-#define ris return * this
-#define dor > debug & operator <<
-#define eni(x) sim > typename \
-  enable_if<sizeof dud<c>(0) x 1, debug&>::type operator<<(c i) {
-sim > struct rge {c b, e; };
-sim > rge<c> range(c i, c j) { return rge<c>{i, j}; }
-sim > auto dud(c* x) -> decltype(cerr << *x, 0);
-sim > char dud(...);
-struct debug {
-#ifdef LOCAL
-~debug() { cerr << endl; }
-eni(!=) cerr << boolalpha << i; ris; }
-eni(==) ris << range(begin(i), end(i)); }
-sim, class b dor(pair < b, c > d) {
-  ris << "(" << d.first << ", " << d.second << ")";
-}
-sim dor(rge<c> d) {
-  *this << "[";
-  for (auto it = d.b; it != d.e; ++it)
-    *this << ", " + 2 * (it == d.b) << *it;
-  ris << "]";
-}
-#else
-sim dor(const c&) { ris; }
-#endif
-};
-#define imie(...) " [" << #__VA_ARGS__ ": " << (__VA_ARGS__) << "] "
-
 typedef long long ll;
-
 const int mod = 1000 * 1000 * 1000 + 7;
-
 void add_self(int & a, int b) { a += b; if(a >= mod) a -= mod; }
 void sub_self(int & a, int b) { a -= b; if(a < 0) a += mod; }
 int mul(int a, int b) { return (ll) a * b % mod; }
@@ -53,6 +21,8 @@ struct Massey {
 	vector<int> start, coef; // 3 optional lines
 	vector<vector<int>> powers;
 	int memo_inv;
+	
+	// Start here and write the next ~25 lines until "STOP"
 	
 	int L; // L == coef.size() <= start.size()
 	Massey(vector<int> in) { // O(N^2)
@@ -79,7 +49,7 @@ struct Massey {
 		}
 		cerr << "L = " << L << "\n";
 		assert(2 * L <= N - 2); // NO RELATION FOUND :(
-		// === STOP === (preparing for queries starts here)
+		// === STOP ===
 		for(int i = 1; i < (int) C.size(); ++i)
 			coef.push_back((mod - C[i]) % mod);
 		assert((int) coef.size() == L);
@@ -88,7 +58,7 @@ struct Massey {
 		while(!coef.empty() && !coef.back()) { coef.pop_back(); --L; }
 		if(!coef.empty()) memo_inv = my_inv(coef.back());
 		powers.push_back(coef);
-		debug() << imie(coef);
+		//~ debug() << imie(coef);
 	}
 	
 	vector<int> mul_cut(vector<int> a, vector<int> b) {
@@ -124,7 +94,6 @@ struct Massey {
 		return total;
 	}
 };
-
 int main() {
 	// f[n] = 3 * f[n-1] + f[n-3] ---> coef: [3, 0, 1]
 	vector<int> in{10, 0, 1, 0, 0, 1, 3, 9, 28, 87};
