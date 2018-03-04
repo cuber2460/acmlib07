@@ -99,5 +99,5 @@ int main() {
 	vector<int> in{10, 0, 1, 0, 0, 1, 3, 9, 28, 87};
 	Massey massey(in);
 	for(int i = 0; i < 30; ++i) printf("%d ", massey.get(i));
-	puts(""); // 10 0 ... 166114895 951398949 883208606
+	puts(""); // 10 0 ... 951398949 883208606 modulo 1e9+7
 }
