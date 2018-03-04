@@ -1,0 +1,21 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[utf8]{inputenc}
+\usepackage{polski}
+\usepackage{amsfonts}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Niech $M(n) = \sum_{i = 1}^n \mu(i)$.
+Można policzyć $M(n)$ w $O \left( n^{2/3} \cdot log(\textrm{smth}) \right)$.
+Dla $u = n^{1 / 3}$, wystarczy spreprocesować $M$ do $n^{2 / 3}$
+  i obliczyć $M(n)$ wzorem:
+
+\[
+  M(n) = M(u) - \sum_{m = 1}^u \mu(m)
+      \sum_{i = \left\lfloor \frac{u}{m}
+            \right\rfloor + 1}^{\left\lfloor \frac{n}{m} \right\rfloor}
+         M \left( \left\lfloor \frac{n}{mi} \right\rfloor \right).
+\]
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
