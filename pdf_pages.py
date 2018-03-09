@@ -326,7 +326,7 @@ class PdfPages(object):
             - len(summary_text) * self.font_max_x_advance,
         self.header_y)
     summary_letters = MakeSummaryLetters(self.summary_data)
-    letters = "KMRB"
+    letters = "KMR"
     for i in range(len(letters)):
       self._PrintSummaryLetter(i, letters[i], letters[i] in summary_letters)
 
