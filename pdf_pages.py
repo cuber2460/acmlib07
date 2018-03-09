@@ -155,7 +155,7 @@ class PdfPages(object):
     self.options = options
     for option in {'number_of_columns', 'characters_in_a_row', 'width',
                    'height', 'margin_top', 'margin_bottom', 'margin_left',
-                   'margin_middle', 'margin_right'}:
+                   'margin_middle', 'margin_right', 'frame_vertical_padding'}:
       setattr(self, option, options[option])
     self._ComputeMeasurements()
     self._InitCairo()
@@ -246,8 +246,11 @@ class PdfPages(object):
     self.context.save()
     for column_id in range(self.columns_printed):
       self.context.save()
-      self.context.rectangle(self.column_xs[column_id], self.column_y,
-                             self.column_width, self.column_height)
+      self.context.rectangle(
+          self.column_xs[column_id],
+          self.column_y - self.frame_vertical_padding,
+          self.column_width,
+          self.column_height + 2 * self.frame_vertical_padding)
       self.context.stroke()
       self.context.restore()
     if self.columns_printed != self.number_of_columns:

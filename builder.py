@@ -13,6 +13,7 @@ options = {
   'margin_left': 8,
   'margin_middle': 4,
   'margin_right': 8,
+  'frame_vertical_padding': 1,
 
   'big_letter_box_percent': 0.8,
   'big_letter_size_percent': 0.7,
