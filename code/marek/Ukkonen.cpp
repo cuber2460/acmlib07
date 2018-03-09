@@ -16,8 +16,8 @@ struct Ukkonen {
   // Ta metoda jest wywoływana zawsze gdy krawędź {node}[a, b] zamienia się
   // w dwie krawędzie: {node}[a, c-1], {middle}[c, b].
   void SplitEdgeCallback(Node* node, int a, int b, Node* middle, int c) {
-    // printf("SplitEdgeCallback({%p}[%d, %d] -> {%p}[%d, %d] + {%p}[%d, %d])\n",
-    //       node, a, b, node, a, c - 1, middle, c, b);
+    // printf("SpltEdgCllbck({%p}[%d, %d] -> {%p}[%d, %d] + {%p}[%d, %d])\n",
+    //        node, a, b, node, a, c - 1, middle, c, b);
   }
 
   // vector<unique_ptr<Node>> nodes_to_delete;  // Odkomentować w celu usuwania.
