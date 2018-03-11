@@ -1,13 +1,10 @@
-// TODO: Porządnie przetestować.
-
-constexpr int pot = mid;
+constexpr int n = (1 << 20);
 // Xor(a, b, c):
 //   Trans(a) XOR; Trans(b) XOR; Trans(c) XOR
 //   d[i] = a[i] * b[i] * c[i]
 //   Trans(d) XOR ODW
 //   return d
-void Trans(ll a[1 << pot]) {
-  const int n = (1 << pot);
+void Trans(ll a[n]) {
   for (int len = 1; len < n; len *= 2) {
     for (int i = 0; i < n; i += 2 * len) {
       for (int j = 0; j < len; j++) {
