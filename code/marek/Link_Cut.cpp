@@ -135,7 +135,6 @@ struct Splay : Value {
     v->expose();
     return lastDisc;
   }
-
 };
 
 Splay* Splay::lastDisc;
