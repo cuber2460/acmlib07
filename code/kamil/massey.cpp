@@ -1,27 +1,11 @@
-//~ https://en.wikipedia.org/wiki/Berlekamp%E2%80%93Massey_algorithm
-#include <bits/stdc++.h>
-using namespace std;
-typedef long long ll;
-const int mod = 1000 * 1000 * 1000 + 7;
-void add_self(int & a, int b) { a += b; if(a >= mod) a -= mod; }
-void sub_self(int & a, int b) { a -= b; if(a < 0) a += mod; }
-int mul(int a, int b) { return (ll) a * b % mod; }
-int my_pow(int a, int b) {
-	int r = 1;
-	while(b) {
-		if(b % 2) r = mul(r, a);
-		a = mul(a, a);
-		b /= 2;
-	}
-	return r;
-}
-int my_inv(int a) { return my_pow(a, mod - 2); }
+const int mod = ...;
+void add_self(int & a, int b); void sub_self(int & a, int b);
+int mul(int a, int b); int my_pow(int a, int b); int my_inv(int a);
 
 struct Massey {
 	vector<int> start, coef; // 3 optional lines
 	vector<vector<int>> powers;
 	int memo_inv;
-	
 	// Start here and write the next ~25 lines until "STOP"
 	
 	int L; // L == coef.size() <= start.size()
