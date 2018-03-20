@@ -2,6 +2,8 @@ import cairo
 import math
 import os
 
+from latex_generator import GeneratePdfDocumentForTex
+
 def GetAlgorithmFromFilename(filename):
   algorithm = os.path.basename(filename)
   if algorithm.endswith('.cpp'):
@@ -164,6 +166,7 @@ class PdfPages(object):
     self._ComputeHeaderMeasurements()
     self._ComputeRightMeasurements()
     self.summary_data = []
+    self._GenerateTitlePage()
 
   def __del__(self):
     self._NextPage()
@@ -197,6 +200,7 @@ class PdfPages(object):
     big_letter_size_percent = self.options['big_letter_box_percent']
     self.right_x = self.width - self.margin_right * big_letter_size_percent
     self.right_y = self.margin_top
+    self.right_y2 = self.height - self.margin_bottom
     self.right_width = self.margin_right * big_letter_size_percent
 
   def _InitCairo(self):
@@ -262,6 +266,12 @@ class PdfPages(object):
       self.context.restore()
     self.context.restore()
 
+  def _PrintUniversityName(self):
+    self._PrintMonoStyleTextXY(
+        Character(**self.options['university_name_decorations']),
+        self.options['university_name'],
+        self.header_x, self.header_y)
+
   def _PrintPageNumber(self):
     if hasattr(self, 'total_number_of_pages'):
       page_text = "Page {page:{padding}} / {all}".format(
@@ -273,9 +283,9 @@ class PdfPages(object):
     self._PrintMonoStyleTextXY(
         Character(**self.options['page_number_decorations']),
         page_text,
-        self.footer_x + self.footer_width \
+        self.header_x + self.header_width \
             - len(page_text) * self.font_max_x_advance,
-        self.footer_y)
+        self.header_y)
 
   def _PrintDate(self):
     if not hasattr(self, 'date'):
@@ -284,12 +294,12 @@ class PdfPages(object):
         Character(**self.options['date_decorations']),
         self.date.strftime('%Y-%m-%d'), self.footer_x, self.footer_y)
 
-  def _PrintSummaryLetter(self, index, letter, is_highlighted):
+  def _PrintSummaryLetter(self, index, max_index, letter, is_highlighted):
     width = self.right_width
     height = width
     margin = 0.1 * width
     x = self.right_x
-    y = self.right_y + (self.right_width + margin) * index
+    y = self.right_y2 - (self.right_width + margin) * (max_index - index)
     # Background.
     if is_highlighted:
       self.context.save()
@@ -322,13 +332,14 @@ class PdfPages(object):
     self._PrintMonoStyleTextXY(
         Character(**self.options['page_summary_decorations']),
         summary_text,
-        self.header_x + self.header_width \
+        self.footer_x + self.footer_width \
             - len(summary_text) * self.font_max_x_advance,
-        self.header_y)
+        self.footer_y)
     summary_letters = MakeSummaryLetters(self.summary_data)
     letters = "KMR"
     for i in range(len(letters)):
-      self._PrintSummaryLetter(i, letters[i], letters[i] in summary_letters)
+      self._PrintSummaryLetter(i, len(letters), letters[i],
+                               letters[i] in summary_letters)
 
   def _NextPage(self):
     if self.pages_printed == self.total_number_of_pages:
@@ -337,6 +348,7 @@ class PdfPages(object):
     self._PrintPageNumber()
     self._PrintDate()
     self._PrintPageSummary()
+    self._PrintUniversityName()
     self.context.show_page()
     self.pages_printed += 1
     self.summary_data = []
@@ -481,3 +493,21 @@ class PdfPages(object):
       self.context.restore()
     self.context.restore()
     self._NextLine(rowspan)
+
+  def _GenerateTitlePage(self):
+    latex_options = self.options['title_page_latex_options']
+    document = GeneratePdfDocumentForTex(latex_options)
+    page = document.get_page(0)
+
+    self.context.save()
+    rect = page.get_crop_box()
+    width = rect.x2 - rect.x1
+    height = rect.y2 - rect.y1
+    ratio = min(self.width / width, self.height / height)
+    self.context.translate(-rect.x1, -rect.y1)
+    self.context.scale(ratio, ratio)
+    self.context.translate(self.width / 2 / ratio - width * 1 / 2,
+                           self.height / 2 / ratio - height * 1 / 2)
+    page.render(self.context)
+    self.context.restore()
+    self.context.show_page()

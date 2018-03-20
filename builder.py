@@ -29,6 +29,15 @@ options = {
     'color': (1, 1, 1),
   },
 
+  'university_name': 'University of Warsaw',
+  'university_name_decorations': {
+    'is_bold': True,
+    'color': (0, 0, 0),
+    'bg_color': (0, 0, 0, 0),
+    'border_color': (0, 0, 0, 0),
+  },
+
+
   'header_decorations': {
     'is_bold': True,
     'color': (0, 0, 0),
@@ -71,6 +80,13 @@ options = {
                5,   # Bottom.
                5,   # Right.
                5),  # Top.
+  },
+
+  'title_page_latex_options': {
+    'input_tex': 'title_page.tex',
+    'width': 200,
+    'zoom': 1,
+    'border': (50, 50, 50, 50),
   },
 }
 
