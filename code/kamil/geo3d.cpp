@@ -10,13 +10,7 @@ struct P {
   P(const P& a) : x(a.x), y(a.y), z(a.z) {}
   void operator=(const P& a) { x = a.x; y = a.y; z = a.z; }
   P operator+(const P& a) const { P p(x + a.x, y + a.y, z + a.z); return p; }
-  P operator-(const P& a) const { P p(x - a.x, y - a.y, z - a.z); return p; }
-  P operator*(ld a) const { P p(x * a, y * a, z * a); return p; }
-  P operator/(ld a) const { assert(a > kEps); P p(x / a, y / a, z / a); return p; }
-  P& operator+=(const P& a) { x += a.x; y += a.y; z += a.z; return *this; }
-  P& operator-=(const P& a) { x -= a.x; y -= a.y; z -= a.z; return *this; }
-  P& operator*=(ld a) { x *= a; y *= a; z *= a; return *this;}
-  P& operator/=(ld a) { assert(a > kEps); x /= a; y /= a; z /= a; return *this; }
+// -, *, /, +=, -=, *=, /=
   
   ld& operator[](int a) {
     if(a == 0) return x;
@@ -149,7 +143,6 @@ struct Utils {
     return q.Area(r);
   }  
 };
-int main() { return 0; }
 /*  double x = sin(lng/180*PI)*cos(lat/180*PI)*alt;
     double y = cos(lng/180*PI)*cos(lat/180*PI)*alt;
     double z = sin(lat/180*PI)*alt; */
