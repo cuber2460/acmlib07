@@ -6,34 +6,27 @@
 
 struct node
 {
-	int id;
-	int roz;
-	int prior;
+	int id, roz, prior;
 	node * lew;
 	node * pra;
 	node * oj;
 	node(int idid)
 	{
 		prior=rand();
-		lew=NULL;
-		pra=NULL;
-		oj=NULL;
+		lew = pra = oj = NULL;
 		roz=1;
 		id=idid;
 	}
 	node()
 	{
 		prior=rand();
-		lew=NULL;
-		pra=NULL;
-		oj=NULL;
+		lew = pra = oj = NULL;
 		roz=1;
 	}
 };
 inline void update(node * v)
 {
-	if (v==NULL)
-		return;
+	if (v==NULL) return;
 	v->roz=1;
 	if (v->lew!=NULL)
 		v->roz+=v->lew->roz;
@@ -43,10 +36,8 @@ inline void update(node * v)
 }
 node * merge(node * v, node * u)
 {
-	if (v==NULL)
-		return u;
-	if (u==NULL)
-		return v;
+	if (v==NULL) return u;
+	if (u==NULL) return v;
 	if ((v->prior)>=(u->prior))
 	{
 		update(v);//czasem można usunąć
