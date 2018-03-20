@@ -1,58 +1,53 @@
-/* HUNGARIAN O(n^3).                                                          */
-/* Maksymalne najdroższe skojarzenie w pełnym grafie dwudzielnym o            */
-/* równolicznych zbiorach wierzchołków.  Argumenty to macierz z wagami        */
-/* i liczba wierzchołków.  Zwracany wynik to wektor, który mówi co jest       */
-/* z czym skojarzone.                                                         */
-/* Jak chcemy najtańsze to bierzemy wszystko z minusem, jak gdzieś nie ma     */
-/* krawędzi to dajemy -INF, przy zalozeniu, ze: n * |waga| < INF.             */
-/* Wszystko w wektorze indeksujemy od 0.                                      */
-
-const int INF = INT_MAX;
+/* HUNGARIAN O(n^3) - Maksymalne najdroższe skojarzenie w pełnym grafie
+ dwudzielnym o równolicznych zbiorach wierzchołków. Dostaje macierz z wagami.
+ Zwraca wektor 'one', gdzie wierzcholek 'i' jest sparowany z 'one[i]' po prawej.
+ Jak chcemy najtańsze, to bierzemy wszystko z minusem. Jak nie ma krawędzi,
+ to dajemy -INF przy założeniu: n * |waga| < INF. Indeksujemy od 0. */
 #define REP(i, n) for(int i = 0; i < int(n); ++i)
-vector<int> hungarian(const vector<vector<int>> & w) {
+vector<int> hungarian2(const vector<vector<int>> & w) {
 	const int n = w.size();
 	vector<int> one(n, -1), two(n, -1), L(n), R(n), par(n);
 	REP(i, n) L[i] = *max_element(w[i].begin(), w[i].end());
-	REP(k, n) {
+	REP(rep, n) {
 		vector<bool> left(n), right(n);
-		vector<int> slack(n, INF), q;
-		int a = -1;
+		vector<int> slack(n, INT_MAX), q;
+		int x = -1;
 		REP(i, n) if(one[i] == -1) q.push_back(i);
-		while(a == -1) {
+		while(x == -1) {
 			REP(z, q.size()) {
-				int i = q[z];
-				left[i] = true;
-				REP(j, n) {
-					int tmp = L[i] + R[j] - w[i][j];
-					if(!right[j] && tmp < slack[j]) {
-						par[j] = i;
-						slack[j] = tmp;
+				int a = q[z];
+				left[a] = true;
+				REP(b, n) {
+					int tmp = L[a] + R[b] - w[a][b];
+					if(!right[b] && tmp < slack[b]) {
+						par[b] = a;
+						slack[b] = tmp;
 						if(tmp == 0) {
-							right[j] = true;
-							if(two[j] != -1) q.push_back(two[j]);
-							else { a = j; goto koniec; }
+							right[b] = true;
+							if(two[b] != -1) q.push_back(two[b]);
+							else { x = b; goto koniec; }
 						}
 					}
 				}
 			}
-			int x = INF;
-			REP(i, n) if(!right[i]) x = min(x, slack[i]);
+			int val = INT_MAX;
+			REP(i, n) if(!right[i]) val = min(val, slack[i]);
 			REP(i, n) {
-				if(left[i]) L[i] -= x;
-				if(right[i]) R[i] += x;
-				else if((slack[i] -= x) == 0) {
+				if(left[i]) L[i] -= val;
+				if(right[i]) R[i] += val;
+				else if((slack[i] -= val) == 0) {
 					right[i] = true;
 					if(two[i] != -1) q.push_back(two[i]);
-					else a = i;
+					else x = i;
 				}
 			}
 		}
 		koniec:
-		while(a != -1) {
-			int tmp = one[par[a]];
-			one[par[a]] = a;
-			two[a] = par[a];
-			a = tmp;
+		while(x != -1) {
+			int tmp = one[par[x]];
+			one[par[x]] = x;
+			two[x] = par[x];
+			x = tmp;
 		}
 	}
 	return one;
