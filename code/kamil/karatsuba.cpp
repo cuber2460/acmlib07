@@ -1,7 +1,5 @@
-#include <bits/stdc++.h>
-using namespace std;
-#define REP(i, n) for(int i = 0; i < (n); ++i)
 // Complexity O(A * B^0.6) where A >= B.
+#define REP(i, n) for(int i = 0; i < (n); ++i)
 template<typename T> void rec_kara(T* a, int one, T* b, int two, T* r) {
 	if(min(one, two) <= 20) { // must be at least "<= 1"
 		REP(i, one) REP(j, two) r[i+j] += a[i] * b[j];
@@ -29,21 +27,4 @@ template<typename T> vector<T> karatsuba(vector<T> a, vector<T> b) {
 	vector<T> r(a.size() + b.size() - 1);
 	rec_kara(a.data(), a.size(), b.data(), b.size(), r.data());
 	return r;
-}
-
-vector<int> r(int n) {
-	vector<int> w;
-	for(int i = 0; i < n; ++i) w.push_back(rand() % 10);
-	return w;
-}
-
-int main() {
-	//vector<int> a = {1,2,3};
-	//vector<int> b = {5,0,20,500};
-	//vector<int> r = karatsuba(a, b);
-	vector<int> a = r(200123), b = r(200123);
-	//~ vector<int> a = r(500123), b = r(5817);
-	vector<int> r = karatsuba(a, b);
-	for(int i = 0; i < min(10, (int) r.size()); ++i) cout << r[i] << " ";
-	cout << "\n";
 }
