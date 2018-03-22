@@ -5,32 +5,24 @@
 /* rozmiar wektora mer po wykonaniu algorytmu to n*log(n)                     */
 
 const int nax=100*1007;
-
 vector <int> graf[nax], farg[nax];
 int ost[nax], bylo[nax], post[nax], spo[nax], counter, coudfs;
 vector <vector<pair<int,int>>> mer;
 
 void dfs1(int v) {
-	if (bylo[v])
-		return;
+	if (bylo[v]) return;
 	bylo[v]=1;
-	for (int i : graf[v])
-		dfs1(i);
+	for (int i : graf[v]) dfs1(i);
 	coudfs--;
 	post[coudfs]=v;
 }
-
 void dfs2(int v, int s) {
-	if (spo[v]>=0)
-		return;
+	if (spo[v]>=0) return;
 	spo[v]=s;
-	for (int i : farg[v])
-		dfs2(i, s);
+	for (int i : farg[v]) dfs2(i, s);
 }
-
 void rek(int l, int r, vector <pair<pair<int,int>,int>> &kra) {
-	if (l>r)
-		return;
+	if (l>r) return;
 	counter++;
 	vector <int> ver;
 	for (auto i : kra) {
@@ -57,8 +49,7 @@ void rek(int l, int r, vector <pair<pair<int,int>,int>> &kra) {
 		}
 	}
 	coudfs=ver.size();
-	for (int i : ver)
-		dfs1(i);
+	for (int i : ver) dfs1(i);
 	for (int i=0; i<(int)ver.size(); i++)
 		dfs2(post[i], post[i]);
 	for (int i : ver)

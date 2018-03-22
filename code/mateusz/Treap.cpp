@@ -6,34 +6,25 @@
 
 struct node
 {
-	int id;
-	int roz;
-	int prior;
+	int id, roz, prior;
 	node * lew;
 	node * pra;
 	node * oj;
-	node(int idid)
-	{
+	node(int idid) {
 		prior=rand();
-		lew=NULL;
-		pra=NULL;
-		oj=NULL;
+		lew = pra = oj = NULL;
 		roz=1;
 		id=idid;
 	}
-	node()
-	{
+	node() {
 		prior=rand();
-		lew=NULL;
-		pra=NULL;
-		oj=NULL;
+		lew = pra = oj = NULL;
 		roz=1;
 	}
 };
 inline void update(node * v)
 {
-	if (v==NULL)
-		return;
+	if (v==NULL) return;
 	v->roz=1;
 	if (v->lew!=NULL)
 		v->roz+=v->lew->roz;
@@ -43,12 +34,9 @@ inline void update(node * v)
 }
 node * merge(node * v, node * u)
 {
-	if (v==NULL)
-		return u;
-	if (u==NULL)
-		return v;
-	if ((v->prior)>=(u->prior))
-	{
+	if (v==NULL) return u;
+	if (u==NULL) return v;
+	if ((v->prior)>=(u->prior)) {
 		update(v);//czasem można usunąć
 		v->pra=merge(v->pra, u);
 		if (v->pra!=NULL)
@@ -56,8 +44,7 @@ node * merge(node * v, node * u)
 		update(v);
 		return v;
 	}
-	else
-	{
+	else {
 		update(u);//czasem można usunąć
 		u->lew=merge(v, u->lew);
 		if (u->lew!=NULL)
@@ -73,16 +60,14 @@ pair <node *, node *> split(node * v, function <bool(node*)> is_left)//is_left m
 	pair <node *, node *> ret;
 	update(v);//czasem można usunąć
 	v->oj=NULL;
-	if (is_left(v))
-	{
+	if (is_left(v)) {
 		ret=split(v->pra, is_left);
 		v->pra=ret.first;
 		if (v->pra!=NULL)
 			v->pra->oj=v;
 		ret.first=v;
 	}
-	else
-	{
+	else {
 		ret=split(v->lew, is_left);
 		v->lew=ret.second;
 		if (v->lew!=NULL)

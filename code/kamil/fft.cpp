@@ -1,12 +1,10 @@
-#include <bits/stdc++.h>
-using namespace std;
-#define REP(i,n) for(int i = 0; i < int(n); ++i)
 /*Precision error max_ans/1e15 (2.5e18) for (long) doubles.
 So integer rounding works for doubles with answers 0.5*1e15,
 e.g. for sizes 2^20 and RANDOM positive integers up to 45k.
 Those values assume DBL_MANT_DIG=53 and LDBL_MANT_DIG=64.
 For input in [0, M], you can decrease everything by M/2.
 If there are many small vectors, uncomment "BRUTE FORCE".*/
+#define REP(i,n) for(int i = 0; i < int(n); ++i)
 typedef double ld; // 'long double' is 2.2 times slower
 struct C {
 	ld real, imag;
@@ -69,7 +67,7 @@ template<typename T>vector<T> multiply(const vector<T> & a, const vector<T> & b,
 	//REP(i,ans.size())err=max(err,abs(done[i].real-ans[i]));
 	}
 	else { // Split big INTEGERS into pairs a1*M+a2,
-		const T M = 150; // where M = sqrt(max_absvalue).
+		const T M = 1<<15; // where M = sqrt(max_absvalue).
 		vector<C> t[2]; // This version is 2.2-2.5 times slower.
 		REP(x, 2) {
 			t[x].resize(n);
@@ -87,22 +85,4 @@ template<typename T>vector<T> multiply(const vector<T> & a, const vector<T> & b,
 		}
 	}
 	return ans;
-}
-
-typedef long long ll;
-int main() {
-	REP(_, 1) {
-		const int n = 500 * 1000;
-		const int M = 30123;
-		vector<ll> a, b;
-		for(int i = 0; i < n; ++i) {
-			a.push_back(rand() % M);
-			b.push_back(rand() % M);
-		}
-		auto ans = multiply(a, b, 0);
-		for(int i = 0; i < min(10, (int) ans.size()); ++i)
-			cout << ans[i] << " ";
-		cout << "\n";
-	}
-	//~ printf("%.10Lf\n", (long double) err);
 }
