@@ -41,15 +41,21 @@ void dft(vector<C> & a, bool rev) {
 	}
 	if(rev) REP(i, n) a[i].real /= n;
 }
-template<typename T>vector<T> multiply(const vector<T> & a, const vector<T> & b, bool split = false) {
+template<typename T>vector<T> multiply(const vector<T> & a, const vector<T> & b,
+		bool split = false, bool normalize = false) {
 	if(a.empty() || b.empty()) return {};
+	T big = 0; if(normalize) { // [0,B] into [-B/2, B/2]
+		assert(a.size() == b.size()); // equal size!!!
+		for(T x : a) big = max(big, x);
+		for(T x : b) big = max(big, x);
+		big /= 2;
+	}
 	int n = a.size() + b.size();
 	vector<T> ans(n - 1);
 	/* if(min(a.size(),b.size()) < 190) { // BRUTE FORCE
 		REP(i, a.size()) REP(j, b.size()) ans[i+j] += a[i]*b[j];
 		return ans; } */
 	while(n&(n-1)) ++n;
-	// http://codeforces.com/blog/entry/48417
 	auto speed = [&](const vector<C> & w, int i, int k) {
 		int j = i ? n - i : 0, r = k ? -1 : 1;
 		return C{w[i].real + w[j].real * r, w[i].imag
@@ -57,8 +63,8 @@ template<typename T>vector<T> multiply(const vector<T> & a, const vector<T> & b,
 	};
 	if(!split) { // standard fast version
 		vector<C> in(n), done(n);
-		REP(i, a.size()) in[i].real = a[i];
-		REP(i, b.size()) in[i].imag = b[i];
+		REP(i, a.size()) in[i].real = a[i] - big;
+		REP(i, b.size()) in[i].imag = b[i] - big;
 		dft(in, false);
 		REP(i, n) done[i] = speed(in, i, 0) * speed(in, i, 1);
 		dft(done, true);
@@ -71,7 +77,7 @@ template<typename T>vector<T> multiply(const vector<T> & a, const vector<T> & b,
 		vector<C> t[2]; // This version is 2.2-2.5 times slower.
 		REP(x, 2) {
 			t[x].resize(n);
-			auto & in = x ? b : a;
+			auto & in = x ? b : a; // below use (in[i]-big) if normalized
 			REP(i, in.size()) t[x][i]=C{ld(in[i]%M), ld(in[i]/M)};
 			dft(t[x], false);
 		}
@@ -80,9 +86,38 @@ template<typename T>vector<T> multiply(const vector<T> & a, const vector<T> & b,
 			vector<C> prod(n);
 			REP(x, 2) REP(y, 2) if(x + y == s) REP(i, n)
 				prod[i] += speed(t[0], i, x) * speed(t[1], i, y);
-			dft(prod, true);
+			dft(prod, true); // remember: llround(prod[i].real)%MOD*mul !!!
 			REP(i, ans.size()) ans[i]+= llround(prod[i].real)*mul;
 		}
 	}
+	if(normalize) {
+		T so_far = 0;
+		REP(i, ans.size()) {
+			if(i < (int) a.size()) so_far += a[i] + b[i];
+			else so_far -= a[i-a.size()] + b[i-a.size()];
+			ans[i] += big * so_far - big * big * min(i + 1, (int) ans.size() - i);
+		}
+	}
 	return ans;
+}
+// compressing up to 2^17 bits into 2 times smaller vectors
+typedef long long ll;
+const ll M = 1 << 17; // M can be smaller if vectors are small
+vector<ll> compress(const vector<ll> & a) {
+	vector<ll> tmp((a.size() + 1) / 2);
+	for(int i = 0; 2 * i + 1 < (int) a.size(); ++i)
+		tmp[i] += a[2 * i] + a[2 * i + 1] * M;
+	if(a.size() % 2) tmp.back() = a.back();
+	return tmp;
+}
+vector<ll> my_mul(const vector<ll> & a, const vector<ll> & b) {
+	vector<ll> tmp = multiply(compress(a), compress(b), false);
+	vector<ll> r(2 * tmp.size() + 1);
+	for(int i = 0; i < (int) tmp.size(); ++i) {
+		r[2*i] += tmp[i] % M; // can be sped-up with bit shifting
+		r[2*i+1] += tmp[i] / M % M;
+		r[2*i+2] += tmp[i] / M / M;
+	}
+	r.resize(a.size() + b.size() - 1);
+	return r;
 }
