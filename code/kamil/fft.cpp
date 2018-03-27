@@ -1,13 +1,9 @@
-/*Precision error max_ans/1e15 (2.5e18) for (long) doubles.
-So integer rounding works for doubles with answers 0.5*1e15,
-e.g. for sizes 2^20 and RANDOM positive integers up to 45k.
-Those values assume DBL_MANT_DIG=53 and LDBL_MANT_DIG=64.
-For input in [0, M], you can decrease everything by M/2.
-If there are many small vectors, uncomment "BRUTE FORCE".*/
+/* Prec. error max_ans/1e15 (2.5e18) for (long) doubles, so int rounding works
+for doubles with answers 0.5e15, e.g. for sizes 2^20 and RANDOM ints in [0,45k],
+assuming DBL_MANT_DIG=53 and LDBL_MANT_DIG=64. Consider normalizing and brute.*/
 #define REP(i,n) for(int i = 0; i < int(n); ++i)
 typedef double ld; // 'long double' is 2.2 times slower
-struct C {
-	ld real, imag;
+struct C { ld real, imag;
 	C operator * (const C & he) const {
 		return C{real * he.real - imag * he.imag,
 				real * he.imag + imag * he.real};
