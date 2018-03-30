@@ -99,6 +99,6 @@ struct Splay {
     p->axroz += axroz;  // SUBTREE
   }
 
-  // Sprawia, że wierzchołek jest rootem w swoim drzewie oraz jest "exposed()".
+  // Sprawia, że wierzchołek jest rootem w logicznym i w splayowym drzewie.
   void make_root() { expose(); flip = !flip; touch(); }
 };
