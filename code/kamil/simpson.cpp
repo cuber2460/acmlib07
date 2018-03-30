@@ -1,5 +1,5 @@
 // Either run integral(A, B) once or split the interval [A, B] into up to ~1000
-// smaller intervals -- if the function behaves oddly or the interval is long.
+// smaller intervals -- if the function f behaves oddly or the interval is long.
 ld simp(ld low, ld high, const ld * old, vector<ld> & nowe) {
 	const int n = 500; // n must be even!!! Try n = 2 and n = 10.
 	nowe.resize(n + 1);
@@ -7,7 +7,7 @@ ld simp(ld low, ld high, const ld * old, vector<ld> & nowe) {
 	for(int i = 0; i <= n; ++i) {
 		int mul = i == 0 || i == n ? 1 : 2 + i % 2 * 2; // 1 2 4 2 4 ...
 		nowe[i] = !old || i % 2 ? f(low + i * jump) : old[i/2];
-		total += nowe[i] * mul;
+		total += nowe[i] * mul;       // uses a global ld f(ld x) function
 	}
 	return total * (high - low) / n / 3;
 }
