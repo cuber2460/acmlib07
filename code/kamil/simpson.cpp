@@ -5,9 +5,9 @@ ld simp(ld low, ld high, const ld * old, vector<ld> & nowe) {
 	nowe.resize(n + 1);
 	ld total = 0, jump = (high - low) / n;
 	for(int i = 0; i <= n; ++i) {
-		int mul = i == 0 || i == n ? 1 : 2 + i % 2 * 2; // 1 2 4 2 4 ...
+		int mul = i == 0 || i == n ? 1 : 2 + i % 2 * 2; // 1 2 4 2 4 ... 2 1
 		nowe[i] = !old || i % 2 ? f(low + i * jump) : old[i/2];
-		total += nowe[i] * mul;       // uses a global ld f(ld x) function
+		total += nowe[i] * mul;   // uses a global function ld f(ld x)
 	}
 	return total * (high - low) / n / 3;
 }
