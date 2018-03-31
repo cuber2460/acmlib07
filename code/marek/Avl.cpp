@@ -47,8 +47,8 @@ Node* N::operator->() const { return node_ptr + v; } // Converts ptr to index.
 N Touch(N n) {
   if (!n or !n->NeedsTouch()) return n;
   if (persistent) {
-    n->l = New(*n->l->ptr());
-    n->r = New(*n->r->ptr());
+    if (n->l) n->l = New(*n->l->ptr());
+    if (n->r) n->r = New(*n->r->ptr());
   }
   n->Touch(n->l ? n->l->ptr() : nullptr, n->r ? n->r->ptr() : nullptr);
   return n;
