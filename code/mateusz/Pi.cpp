@@ -6,16 +6,13 @@ using ll=long long;
 struct Primes
 {
 	vector <ll> w, dp;
-	int gdz(ll v)
-	{
+	int gdz(ll v) {
 		if (v<=w.back()/v)
 			return v-1;
 		return w.size()-w.back()/v;
 	}
-	ll pi(ll n)
-	{
-		for (ll i=1; i*i<=n; i++)
-		{
+	ll pi(ll n) {
+		for (ll i=1; i*i<=n; i++) {
 			w.push_back(i);
 			if ((n/i)!=i)
 				w.push_back(n/i);
@@ -23,8 +20,7 @@ struct Primes
 		sort(w.begin(), w.end());
 		for (ll i : w)
 			dp.push_back(i-1);
-		for (ll i=1; (i+1)*(i+1)<=n; i++)
-		{
+		for (ll i=1; (i+1)*(i+1)<=n; i++) {
 			if (dp[i]==dp[i-1])
 				continue;
 			for (int j=(int)w.size()-1; w[j]>=(i+1)*(i+1); j--)
@@ -32,8 +28,7 @@ struct Primes
 		}
 		return dp.back();
 	}
-	ll ask(ll v)//v==n/u for some u
-	{
+	ll ask(ll v) {//v==n/u for some u
 		return dp[gdz(v)];
 	}
 };
