@@ -3,6 +3,9 @@
 \usepackage[utf8]{inputenc}
 \usepackage{polski}
 \usepackage{amsfonts}
+\usepackage{amsmath}
+\DeclareMathOperator{\arcsinh}{arcsinh}
+\DeclareMathOperator{\dx}{ dx}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -17,5 +20,25 @@ Pole figury obrotowej $f : [a, b] \to \mathbb{R}$:
 Objętość figury obrotowej $f : [a, b] \to \mathbb{R}$:
   \hfill
   $\pi \int_a^b f(x)^2 \; dx$.
+
+$\int \sqrt{x^2 + 1} \; dx = \frac12 \left( x\sqrt{x^2 + 1} + \arcsinh x  \right) + c$
+
+$\int \sqrt{x^2 + 1} \dx\ =\ \frac12 \left( x\sqrt{x^2 + 1} + \arcsinh x \right) + c$
+
+ \( \int \sqrt{x^2 + 1} \dx\ =\ \frac12 \left( x\sqrt{x^2 + 1} + \arcsinh x \right) + c\) 
+  \ \ \ $(\arcsinh = \mathtt{asinh})$ \\
+  \( \int \sqrt{1 - x^2} \dx\ =\ \frac12 \left( x\sqrt{1 - x^2} + \arcsin x \right) + c\) \\
+  \( \int \frac{1}{ax^2 + bx + c} \dx\ =\ \frac{2}{\sqrt{4ac - b^2}} \arctan
+      \frac{2ax + b}{\sqrt{4ac - b^2}} \qquad \qquad (\Delta < 0)\) \\
+  \( \int \frac{x}{ax^2 + bx + c} \dx\ =\ \frac{1}{2a} \ln |ax^2 + bx + c|
+      - \frac{b}{2a} \int \frac{\dx}{ax^2 + bx + c} \) \\
+  \( \int \tan x \dx = - \ln |\cos x| + c \) \\
+  \( (\arcsin x)' = \frac{1}{\sqrt{1 - x^2}}, \qquad \qquad
+     (\arccos x)' = -\frac{1}{\sqrt{1 - x^2}} \) \\
+  \( \frac1{\pi} = 0.31831,\ \ \pi^2 = 9.86960,\ \ \frac1{\pi^2} = 0.10132,\ \ \frac1e = 0.36788,
+  \ \ \gamma = 0.577215664901532\) \\
+  \( H_n = \ln n + \gamma + \frac1{2n} - \frac1{12n^2} + O(n^{-4}) \) \\
+  \( \ln n! = n \ln n - n + \frac12 \ln(2 \pi n) + \frac1{12n} - \frac1{360n^3} + \frac1{1260n^5}
+  - O(n^{-7}) \)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
