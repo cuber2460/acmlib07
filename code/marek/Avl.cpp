@@ -1,32 +1,20 @@
 constexpr bool persistent = true;
 
-struct Data {
-  Data() = default;
-  Data(/* Konstruktor dla pojedynczego wierzcholka. */) {}
-  Data(const Data&) = default;
-  bool NeedsTouch() { return false; }
-  void Touch(Data* left, Data* right)  { assert(NeedsTouch()); }
-  // Beware: left and right might not be touched!
-  void Update(Data* left, Data* right) { assert(!NeedsTouch()); }
-};
-
 struct Node;
 struct N {
   int v;
-  N(int v) : v(v) {}
+  N(int v_ = 0) : v(v_) {}
   N(Node* n);
   Node* operator->() const;
   operator int() const { return v; }
 };
 
-struct Node : Data {
+struct Node {
   N l, r;
-  int h;
-
-  template <typename ...Args>
-  Node(Args&& ...args)
-      : Data(forward<Args>(args)...), l(0), r(0), h(0) {}
-
+  int h = 0;
+  bool NeedsTouch() { return false; }
+  void Touch() {}
+  void Update() { assert(!NeedsTouch()); }
   Node(const Node& node) = default;
   Node* ptr() { return this; }
 };
@@ -50,7 +38,7 @@ N Touch(N n) {
     if (n->l) n->l = New(*n->l->ptr());
     if (n->r) n->r = New(*n->r->ptr());
   }
-  n->Touch(n->l ? n->l->ptr() : nullptr, n->r ? n->r->ptr() : nullptr);
+  n->Touch();
   return n;
 }
 
@@ -60,7 +48,7 @@ N Make(N l, N v, N r) {
   v->r = r;
   v->h = max(l->h, r->h) + 1;
   assert(abs(l->h - r->h) <= 2);
-  v->Update(l ? l->ptr() : nullptr, r ? r->ptr() : nullptr);
+  v->Update();
   return v;
 }
 
