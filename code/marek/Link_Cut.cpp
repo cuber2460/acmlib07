@@ -3,14 +3,12 @@ struct Splay {
   bool flip = false;
   int roz = 1;    // SUBTREE  Rozmiar poddrzewa.
   int axroz = 1;  // SUBTREE  Pomocniczny rozmiar poddrzewa.
-
   void update() {
     assert(!flip and (!l or !l->flip) and (!r or !r->flip));
     axroz = roz;               // SUBTREE
     if (l) axroz += l->axroz;  // SUBTREE
     if (r) axroz += r->axroz;  // SUBTREE
   }
-
   void touch() {
     if (flip) {
       swap(l, r);
@@ -19,10 +17,8 @@ struct Splay {
       flip = false;
     }
   }
-
   bool sroot() { return !p or (p->l != this and p->r != this); }
   void connect(Splay* c, bool left) { (left ? l : r) = c; if (c) c->p = this; }
-
   void rotate() {
     Splay* f = p;
     Splay* t = f->p;
@@ -34,12 +30,10 @@ struct Splay {
     else t->connect(this, f == t->l);
     f->update();
   }
-
   void push() {
     sroot() ? touch() : p->push();
     if (l) l->touch(); if (r) r->touch();
   }
-
   void splay() {
     push();
     while (!sroot()) {
@@ -49,7 +43,6 @@ struct Splay {
     }
     update();
   }
-
   // Przenosi wierzchołek do korzenia. Prawe dziecko v będzie równe nullptr.
   // Aby zrobić coś na ścieżce od korzenia do v:
   //   >> v->expose();
@@ -72,7 +65,6 @@ struct Splay {
     splay();
     return x;
   }
-
   // Zwraca roota drzewowego (nie splejowego!).
   Splay* root() {
     expose();
@@ -81,7 +73,6 @@ struct Splay {
     s->splay();
     return s;
   }
-
   // Zakłada, że (*this) nie jest korzeniem drzewa.
   // Usuwa krawędź znajdującą się nad danym wierzchołkiem.
   void cut() {
@@ -90,7 +81,6 @@ struct Splay {
     while (s->touch(), s->r) s = s->r;
     s->splay(); s->r->p = nullptr; s->r = nullptr;
   }
-
   void link(Splay* to) {
     expose(); assert(!l /* Jest rootem. */);
     p = to;
@@ -98,7 +88,6 @@ struct Splay {
     p->roz += axroz;    // SUBTREE
     p->axroz += axroz;  // SUBTREE
   }
-
   // Sprawia, że wierzchołek jest rootem w logicznym i w splayowym drzewie.
   void make_root() { expose(); flip = !flip; touch(); }
 };
