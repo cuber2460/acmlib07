@@ -1,5 +1,4 @@
-struct suffix_automaton
-{
+struct suffix_automaton {
 	vector<map<char,int>> edges; // edges[i]  : the labeled edges from node i
 	vector<int> link;            // link[i]   : the parent of i
 	vector<int> length;          // length[i] : the length of the longest string in the ith class

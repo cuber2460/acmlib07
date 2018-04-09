@@ -3,8 +3,7 @@
 
 using ll=long long;
 
-struct Primes
-{
+struct Primes {
 	vector <ll> w, dp;
 	int gdz(ll v) {
 		if (v<=w.back()/v)

@@ -41,23 +41,23 @@ void add_letter(char c) {
     last = to[last][c];
 }
 int main() {
-	init();
-	for(int i = 1; i <= nn; i++) {
+    init();
+    for(int i = 1; i <= nn; i++) {
         add_letter(tek[i]);
         for(int v = last; len[v] > 0; v = slink[v]) {
             series_ans[v] = {ans[i - (len[slink[v]] + diff[v])], i - (len[slink[v]] + diff[v])};
             if(diff[v] == diff[link[v]])
                 series_ans[v] = min(series_ans[v], series_ans[link[v]]);
             if (!(i&1)) {
-				if (series_ans[v].first+1<ans[i]) {
-					ans[i] = series_ans[v].first + 1;
-					z[i] = series_ans[v].second;
-				}
-			}
+                if (series_ans[v].first+1<ans[i]) {
+                    ans[i] = series_ans[v].first + 1;
+                    z[i] = series_ans[v].second;
+                }
+            }
         }
         if (!(i&1) && tek[i]==tek[i-1] && ans[i-2]<ans[i]) {
-			ans[i]=min(ans[i], ans[i-2]);
-			z[i]=i-2;
-		}
+            ans[i]=min(ans[i], ans[i-2]);
+            z[i]=i-2;
+        }
     }
 }
