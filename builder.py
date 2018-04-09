@@ -10,9 +10,9 @@ options = {
   'height': 210,
   'margin_top': 8,
   'margin_bottom': 11,
-  'margin_left': 8,
-  'margin_middle': 4,
-  'margin_right': 8,
+  'margin_left': 20,
+  'margin_middle': 15,
+  'margin_right': 10,
   'frame_vertical_padding': 1,
 
   'big_letter_box_percent': 0.8,
