@@ -138,11 +138,9 @@ struct Hull {
 		while(pot < (int) all.size()) pot *= 2;
 		for(int rep = 0; rep < REPS; ++rep) {
 			vector<Node> & t = tr[rep];
-			t.clear();
-			t.resize(2 * pot);
+			t.clear(); t.resize(2 * pot);
 			for(int i = 1; i < pot; ++i) {
-				t[i].L = & t[2*i];
-				t[i].R = & t[2*i+1];
+				t[i].L = & t[2*i]; t[i].R = & t[2*i+1];
 			}
 		}
 		for(int i = 0; i < (int) all.size(); ++i) todo.push(pot + i);
@@ -155,12 +153,10 @@ struct Hull {
 			if(type == LOWER) id = (int) all.size() - 1 - id;
 			Node & tmp = tr[type][pot+id];
 			if(tmp.empty()) {
-				tmp.a_size = 1;
-				tmp.first = which_point;
+				tmp.a_size = 1; tmp.first = which_point;
 			}
 			else {
-				tmp.a_size = 0;
-				tmp.first = NULL;
+				tmp.a_size = 0; tmp.first = NULL;
 			}
 			todo.push(pot + id);
 		}
@@ -169,47 +165,34 @@ struct Hull {
 		static long long T = 0;
 		++T;
 		while(!todo.empty()) {
-			int id = todo.top();
-			todo.pop();
-			if(done[id] == T) continue;
-			done[id] = T;
-			tr[0][id].act();
-			tr[1][id].act();
+			int id = todo.top(); todo.pop();
+			if(done[id] == T) continue; done[id] = T;
+			tr[0][id].act(); tr[1][id].act();
 			if(id != 1) todo.push(id / 2);
 		}
 		todo = priority_queue<int>();
 		// ---
 		vector<P> w;
 		// printf("should = %d\n", (int) tr[0][1].size());
-		tr[0][1].getHull(0, 0, w);
-		if((int) w.size() <= 1) return w;
-		w.pop_back();
-		tr[1][1].getHull(0, 0, w);
-		w.pop_back();
-		return w;
+		tr[0][1].getHull(0, 0, w); if((int) w.size() <= 1) return w;
+		w.pop_back(); tr[1][1].getHull(0, 0, w);
+		w.pop_back(); return w;
 	}
 };
 const int nax = 6e5 + 5;
 int type[nax], val[nax]; P p[nax];
 int main() {
-	int T;
-	scanf("%d", &T);
+	int T; scanf("%d", &T);
 	while(T--) {
-		int n;
-		scanf("%d", &n);
+		int n; scanf("%d", &n);
 		vector<P> w(n);
 		for(int i = 0; i < n; ++i) {
-			w[i].read(i);
-			w[i].id = i + 1;
+			w[i].read(i+1); //w[i].id = i + 1;
 		}
-		Hull hull(w);
-		set<P> s;
-		for(int i = 0; i < n; ++i) {
-			if(!s.count(w[i])) {
-				s.insert(w[i]);
-				// printf("(%d,%d)\n", (int) w[i].x, (int) w[i].y);
-				hull.change(w[i]);
-			}
+		Hull hull(w); set<P> s;
+		for(int i = 0; i < n; ++i) if(!s.count(w[i])) {
+			s.insert(w[i]);
+			hull.change(w[i]);
 		}
 		w = hull.get();
 	}
