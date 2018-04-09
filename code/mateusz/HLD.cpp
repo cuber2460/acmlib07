@@ -1,14 +1,9 @@
-// Wypełniamy drz listą dzieci każdego wierzchołka, po czym odpalamy
-// dfs_roz(root) i dfs_pre(root). Użycie get_path(v, u) zwróci przedziały
-// odpowiadające ścieżce z v do u. Przedziały odpowiadające ścieżce z v do lca
-// mają first>=second, zaś te dla ścieżki z lca do u mają first<=second,
-// przedziały są po kolei, lca występuje tam dwa razy, najpierw jako second,
-// a zaraz potem jako first.
-
+// Przedziały odpowiadające ścieżce z v do lca mają first>=second, zaś te dla
+// ścieżki z lca do u mają first<=second, przedziały są po kolei, lca występuje
+// tam dwa razy, najpierw jako second, a zaraz potem jako first.
 const int nax = 100 * 1007;
 vector<int> drz[nax];
 int prel, roz[nax], jump[nax], pre[nax], post[nax], fad[nax];
-
 void dfs_roz(int v) {
   roz[v] = 1;
   for (int& i : drz[v]) {
@@ -18,7 +13,6 @@ void dfs_roz(int v) {
     if (roz[i] > roz[drz[v][0]]) swap(i, drz[v][0]);
   }
 }
-
 void dfs_pre(int v) {
   if (!jump[v]) jump[v] = v;
   pre[v] = ++prel;
@@ -26,7 +20,6 @@ void dfs_pre(int v) {
   for (int i : drz[v]) dfs_pre(i);
   post[v] = prel;
 }
-
 int lca(int v, int u) {
   while (jump[v] != jump[u]) {
     if (pre[v] < pre[u]) swap(v, u);
@@ -34,7 +27,6 @@ int lca(int v, int u) {
   }
   return (pre[v] < pre[u] ? v : u);
 }
-
 vector<pair<int, int>> path_up(int v, int u) {
   vector<pair<int, int>> ret;
   while (jump[v] != jump[u]) {
@@ -44,7 +36,6 @@ vector<pair<int, int>> path_up(int v, int u) {
   ret.emplace_back(pre[u], pre[v]);
   return ret;
 }
-
 vector<pair<int, int>> get_path(int v, int u) {
   int w = lca(v, u);
   auto ret = path_up(v, w);

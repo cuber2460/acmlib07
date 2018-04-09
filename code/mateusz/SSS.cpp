@@ -3,7 +3,6 @@
 /* i wypełnia wektor mer parami łączonych wierzchołków.                       */
 /* UWAGA: pary łączonych wierzchołków pojawiają się wiele razy, całkowity     */
 /* rozmiar wektora mer po wykonaniu algorytmu to n*log(n)                     */
-
 const int nax=100*1007;
 vector <int> graf[nax], farg[nax];
 int ost[nax], bylo[nax], post[nax], spo[nax], counter, coudfs;
@@ -65,7 +64,6 @@ void rek(int l, int r, vector <pair<pair<int,int>,int>> &kra) {
 	rek(l, s-1, lew);
 	rek(s+1, r, pra);
 }
-
 void sss(vector <pair<int,int>> kra)
 {
 	mer.clear();

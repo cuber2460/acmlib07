@@ -1,9 +1,8 @@
 struct suffix_automaton {
-	vector<map<char,int>> edges; // edges[i]  : the labeled edges from node i
-	vector<int> link;            // link[i]   : the parent of i
-	vector<int> length;          // length[i] : the length of the longest string in the ith class
-	int last;                    // the index of the equivalence class of the whole string
-
+	vector<map<char,int>> edges;
+	vector<int> link;
+	vector<int> length;
+	int last;// wierzcholek z calym stringiem, byc moze to nie najwiekszy numer
 	suffix_automaton(string s) {
 		// add the initial node
 		edges.push_back(map<char,int>());

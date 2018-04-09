@@ -1,8 +1,4 @@
-// Dinic O(n^2 * m) lub O(MaxFlow * (n + m)).
-// Dla grafów z krawędziami jednostkowymi działa w O(m * sqrt(n)).
-
 using T = long long;
-
 class Flow {
   struct E {
     int dest;
@@ -12,18 +8,16 @@ class Flow {
   vector<unique_ptr<T>> ts;
   vector<vector<E>> graf;
   vector<int> ptr, odl;
-
+  
   void vert(int v) {
     n = max(n, v + 1);
     graf.resize(n);
     ptr.resize(n);
     odl.resize(n);
   }
-
   bool iszero(T v) {
     return !v; // Zmienić dla doubli.
   }
-
   void bfs() {
     fill(odl.begin(), odl.end(), 0);
     vector<int> kol = {zr};
@@ -37,7 +31,6 @@ class Flow {
       }
     }
   }
-
   T dfs(int v, T lim) {
     if (v == uj) return lim;
     T ret = 0, wez;
@@ -54,7 +47,6 @@ class Flow {
     }
     return ret;
   }
-
  public:
   void add_edge(int u, int v, T lim, bool bi = false /* bidirectional? */) {
     vert(max(u, v));
@@ -64,7 +56,6 @@ class Flow {
     graf[u].push_back(E{v, lim,      a, b});
     graf[v].push_back(E{u, lim * bi, b, a});
   }
-
   T dinic(int zr_, int uj_) {
     zr = zr_; uj = uj_;
     vert(max(zr, uj));
@@ -78,7 +69,6 @@ class Flow {
     }
     return ret;
   }
-
   vector<int> cut() {
     vector<int> ret;
     bfs();
@@ -87,7 +77,6 @@ class Flow {
         ret.push_back(i);
     return ret;
   }
-
   map<pair<int, int>, T> get_flowing() {  // Tam gdzie plynie 0 może nie być
     map<pair<int, int>, T> ret;           // krawędzi.
     for (int i = 0; i < n; i++)

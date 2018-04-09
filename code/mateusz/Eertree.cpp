@@ -4,11 +4,9 @@
 /*                                                                            */
 /* Poniżej kod liczący podział na parzyste palindromy minimalizujący liczbę   */
 /* palindromów dłuższych niż 2.                                               */
-
 const int maxn = 1000*1000+7, sigma = 26;
 int len[maxn], link[maxn], to[maxn][sigma];
 int slink[maxn], diff[maxn];
-
 pair <int,int> series_ans[maxn];
 int ans[maxn], z[maxn];
 int sz, last, n;
