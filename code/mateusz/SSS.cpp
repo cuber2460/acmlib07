@@ -1,13 +1,7 @@
-/* Silnie spójne składowe O(n*log(n)).                                        */
-/* Przyjmuje opis krawędzi skierowanych kolejno dodawanych do grafu           */
-/* i wypełnia wektor mer parami łączonych wierzchołków.                       */
-/* UWAGA: pary łączonych wierzchołków pojawiają się wiele razy, całkowity     */
-/* rozmiar wektora mer po wykonaniu algorytmu to n*log(n)                     */
 const int nax=100*1007;
 vector <int> graf[nax], farg[nax];
 int ost[nax], bylo[nax], post[nax], spo[nax], counter, coudfs;
 vector <vector<pair<int,int>>> mer;
-
 void dfs1(int v) {
 	if (bylo[v]) return;
 	bylo[v]=1;
