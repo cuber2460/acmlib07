@@ -1,24 +1,19 @@
-/*
-All methods can be changed to 'const', and arguments to 'const &'.
+/* All methods can be changed to 'const', and arguments to 'const &'.
 If you want to squeeze the running time, you should also create new non-const
 methods like:
 1) void operator += (const P & b) { x += b.x; y += b.y; }
 2) void rotateSelf(ld angle) { ... }
-
 INFO 1
 In methods 'below()' use '< eps' only if you HAVE TO avoid unnecessary objects,
 e.g. if you need the exact size of CH. Using 'eps' may cause discarding
 objects that only slightly improve the result, so try to avoid 'eps'.
-
 INFO 2
 In 'L3::fix()' uncomment scaling by gcd or sqrt, if needed.
-
 INFO 3
 How to find an upper envelope of lines Ax+By+C=0, where B > 0.
 Sort lines by slope increasingly (ties: lower line first). Then a determinant
 of three consecutive non-parallel lines is positive iff all three lines
 are visible from the above, i.e. they form an upside down 'A' shape. */
-
 template<typename T> T K(T a) { return a * a; }
 #define K(a) K(1LL * (a))
 typedef long double ll; // can be changed to 'long double'
@@ -27,8 +22,7 @@ typedef long double ld;
 const ld eps = 1e-12;
 #pragma GCC diagnostic ignored "-Wnarrowing"
 struct P {
-	ll x, y;
-	// ... (trivial operators)
+	ll x, y; // + ... (trivial operators)
 	ll dot(P b) { return x * b.x + y * b.y; }
 	ld len() { return sqrt(K(x) + K(y)); }
 	P scaleTo(ld to) { return *this * (to / len()); }
@@ -50,12 +44,6 @@ struct P {
 		return (*this - b * ratio) / (1 - ratio);
 	}
 };
-
-debug & operator << (debug & dd, P p) {
-	dd << "(" << p.x << ", " << p.y << ")";
-	return dd;
-}
-
 struct L2 {
 	P one, two;
 	// P p[2]; P & operator [](int i) { return p[i]; }
@@ -76,7 +64,6 @@ struct L2 {
 		ll den = A * B;
 		assert(abs(den) > eps); // parallel, maybe equal
 		return (A * (he.one * he.two) - B * (one * two)) * (1.0 / den);
-		// https://en.wikipedia.org/wiki/Line-line_intersection
 		// A = (x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4)
 		// A'= (x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4)
 		// B = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4)
@@ -87,7 +74,6 @@ struct L2 {
 		return he + unit_normal * unit_normal.dot(one - he);
 	}
 	P reflect(P he) { return project(he) * 2 - he; }
-	void write() { cerr << "L2{ "; one.write(", "); cerr << " }\n"; }
 	// for CH: sort by slope; below() : change to L3 or compare 'x' of intersections
 };
 L2 toL2(ll a, ll b, ll c) {
@@ -97,7 +83,6 @@ L2 toL2(ll a, ll b, ll c) {
 	else assert(false);
 	return L2{first, first + P{b, -a}};
 }
-
 ll det(ll t[3][3]) { // for CH of lines Ax+By+C=0
 	ll s = 0;
 	for(int i = 0; i < 3; ++i)
@@ -105,7 +90,6 @@ ll det(ll t[3][3]) { // for CH of lines Ax+By+C=0
 			s += t[0][i] * t[1][j%3] * t[2][3-i-j%3] * mul;
 	return s;
 }
-
 struct L3 {
 	// a * x + b * y + c = 0, assert(b > 0 || (b == 0 && a > 0))
 	ll a, b, c;
@@ -153,7 +137,6 @@ L3 toL3(P one, P two) {
 	ll b = one.x - two.x;
 	return L3{a, b, -(a * one.x + b * one.y)}.fix();
 }
-
 struct Circle {
 	P o;
 	ld r;
@@ -186,7 +169,7 @@ struct Circle {
 			for(int i = 0; i < (int) min(one.size(), two.size()); ++i)
 				ret.push_back(L2{one[i], two[i]});
 		};
-		if(abs(r - he.r < 1e-9)) {
+		if(abs(r - he.r < 1e-9)) { // beka z nawiasow XD
 			P dir = (he.o - o).rotate90().scaleTo(r);
 			for(int tmp : {1, -1})
 				ret.push_back(L2{o + dir * tmp, he.o + dir * tmp});
@@ -198,10 +181,28 @@ struct Circle {
 		return ret;
 	}
 };
-
 Circle apollonius(P a, P b, ld ratio) { // ratio = distA / distB
 	assert(ratio >= 0);
 	assert(abs(ratio - 1) > 1e-14); // straight line through (a+b)/2
 	P in = a.apol_in(b, ratio), out = a.apol_out(b, ratio);
 	return Circle{(in + out) / 2, in.dist(out) / 2};
+}
+Point Bary(Point A, Point B, Point C, LD a, LD b, LD c) {
+  return (A * a + B * b + C * c) / (a + b + c);
+}
+Point Centroid(Point A, Point B, Point C) { return Bary(A, B, C, 1, 1, 1); }
+Point Circumcenter(Point A, Point B, Point C) {
+  LD a = (B - C).SqNorm(), b = (C - A).SqNorm(), c = (A - B).SqNorm();
+  return Bary(A, B, C, a * (b + c - a), b * (c + a - b), c * (a + b - c));
+}
+Point Incenter(Point A, Point B, Point C) {
+  return Bary(A, B, C, (B - C).Norm(), (A - C).Norm(), (A - B).Norm());
+}
+Point Orthocenter(Point A, Point B, Point C) {
+  LD a = (B - C).SqNorm(), b = (C - A).SqNorm(), c = (A - B).SqNorm();
+  return Bary(A, B, C, (a+b-c)*(c+a-b), (b+c-a)*(a+b-c), (c+a-b)*(b+c-a));
+}
+Point Excenter(Point A, Point B, Point C) { // opposite to A
+  LD a = (B - C).Norm(), b = (A - C).Norm(), c = (A - B).Norm();
+  return Bary(A, B, C, -a, b, c);
 }
