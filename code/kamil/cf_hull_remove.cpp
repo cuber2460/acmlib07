@@ -1,13 +1,7 @@
-// code for CF problem
-// Build the Fence http://www.spoj.com/problems/BSHEEP/
-// Lena and Queries http://codeforces.com/contest/678/problem/F
-#include <bits/stdc++.h>
-using namespace std;
 typedef long long ll;
 struct P {
-	ll x, y;
-	int id;
-	void read() { scanf("%lld%lld", &x, &y); }
+	ll x, y; int id;
+	void read(int _id) { id = _id; scanf("%lld%lld", &x, &y); }
 	void write() const { printf("(%lld,%lld)", x, y); }
 	ll operator * (const P & b) const { return x * b.y - y * b.x; }
 	P operator + (const P & b) const { return P{x + b.x, y + b.y}; }
@@ -18,136 +12,113 @@ struct P {
 	}
 	bool operator == (const P & b) const {
 		return make_pair(x, y) == make_pair(b.x, b.y); }
-	bool underLine(const P & a, const P & b) const {
+	bool under(const P & a, const P & b) const {
 		return (b - a) * (*this - a) <= 0;
 	}
-};		long long Z; int tak_dupsko;
+};
 struct Node {
 	int a_size, b_size;
-	P * a, * b, * first;
-	Node * L, * R;
+	P *a, *b, *first;
+	Node *L, *R;
+	Node() { a_size=b_size=0; a=b=first=0; L=R=0; }
+	Node(P *p) { *this = Node(); a_size=1; first=p; }
+	Node(Node *l, Node *r) { *this = Node(); L=l; R=r; act(); }
 	int size() const { return a_size + b_size; }
-	void check() const {
-		assert((L == NULL) == (R == NULL));
-		if(L != NULL) {
-			assert((a == NULL) == L -> empty());
-			assert((b == NULL) == R -> empty());
-		}
-		if(L == NULL) {
-			assert(size() == 0 || size() == 1);
-		}
-		else assert(size() <= L -> size() + R -> size());
-		// puts("ok");
-	}
-	bool empty() const { return size() == 0; }
-	bool isLeaf() const { return L == NULL; }
-	bool nonLeaf() const { return !isLeaf(); }
+	bool empty() const { return !first; }
+	bool leaf() const { return !L; }
 	void act() {
-		if(isLeaf()) {
-			check();
-			return;
-		}
-		if(L -> size()) first = L -> first;
-		else if(R -> size()) first = R -> first;
+		if(leaf()) return;
+		if(!L->empty()) first = L->first;
+		else if(!R->empty()) first = R->first;
 		else first = NULL;
-		if(L -> empty() || R -> empty()) {
-			a = L -> first; // maybe NO/NULL
-			a_size = L -> size();
-			b = R -> first;
-			b_size = R -> size();
-			check();
+		if(L->empty() || R->empty()) {
+			a = L->first; // possibly NULL
+			a_size = L->size();
+			b = R->first;
+			b_size = R->size();
+		}
+		else {
+			a_size = b_size = 1;
+			act(L, R); // modifies a_size and b_size
+		}
+	}
+	private : void act(Node *inter1, Node *inter2) {
+		/*if(inter1->leaf() && inter2->leaf()) {*/ //if there is no size()
+		if(inter1->size() == 1 && inter2->size() == 1) {
+			a = inter1->first;
+			b = inter2->first;
 			return;
 		}
-		assert(L -> size() && R -> size());
-		a_size = b_size = 1;
-		act(L, R); // modifies a_size and b_size
-		check();
-	}
-	private : void act(Node * inter1, Node * inter2) {
-		++Z;
-		if(inter1 -> size() == 1 && inter2 -> size() == 1) {
-			a = inter1 -> first;
-			b = inter2 -> first;
-			return;
+		P *A = inter1->a, *B = inter1->b;
+		P *C = inter2->a, *D = inter2->b;
+		if(inter1->L && (!B || (A && C && B->under(*A, *C))))
+			return act(inter1->L, inter2);
+		if(!C || (B && D && C->under(*B, *D)))
+			return act(inter1, inter2->R);
+		auto x = inter2->first->x;
+		long double x1 = B->x - (A ? A->x : 0), x2 = (D ? D->x : 0) - C->x;
+		if(!A || (A && D && (A->y - C->y) * x1 * x2 + x2 * (B->y - A->y)
+				* (x - A->x) - x1 * (D->y - C->y) * (x - C->x) > 0)) {
+			a_size += inter1->size() - inter1->R->size();
+			return act(inter1->R, inter2);
 		}
-		P * A = inter1 -> a, * B = inter1 -> b;
-		P * C = inter2 -> a, * D = inter2 -> b;
-		if(inter1 -> size() > 1) {
-			if(A == NULL) return act(inter1 -> R, inter2);
-			if(B == NULL) return act(inter1 -> L, inter2);
-		}
-		if(inter2 -> size() > 1) {
-			if(C == NULL) return act(inter1, inter2 -> R);
-			if(D == NULL) return act(inter1, inter2 -> L);
-		}
-		auto remA = [&] {
-			a_size += inter1 -> a_size;
-			a_size -= inter1 -> R -> size() - inter1 -> b_size;
-			act(inter1 -> R, inter2);
-		};
-		auto remB = [&] { return act(inter1 -> L, inter2); };
-		auto remC = [&] { return act(inter1, inter2 -> R); };
-		auto remD = [&] {
-			b_size += inter2 -> b_size;
-			b_size -= inter2 -> L -> size() - inter2 -> a_size;
-			act(inter1, inter2 -> L);
-		};
-		if(inter1 -> size() == 1) {
-			if(C->underLine(*inter1 -> first, *D)) return remC();
-			else return remD();
-		}
-		if(inter2 -> size() == 1) {
-			if(B->underLine(*A, *inter2 -> first)) return remB();
-			else return remA();
-		}
-		if(B->underLine(*A, *C) || B->underLine(*A, *D)
-			|| B->underLine(*A, *inter2 -> first))
-				return remB();
-		if(C->underLine(*B, *D)) return remC();
-		int a_memo = a_size, b_memo = b_size;
-		remA();
-		if(B->underLine(*A, *b)) {
-			a_size = a_memo;
-			b_size = b_memo;
-			assert(++tak_dupsko < 120 * 1000);
-			do { // remD(), repeated
-				b_size += inter2 -> b_size;
-				b_size -= inter2 -> L -> size() - inter2 -> a_size;
-				inter2 = inter2 -> L;
-			} while(false && inter2 -> nonLeaf() && inter2 -> b != NULL
-				&& (*B - *A) * (*inter2 -> b - *b) < 0
-				&& (*A < *B) == (*b < *inter2 -> b)); // does it work for LOWER?
-			do {
-				inter1 = inter1 -> L; // remB()
-			} while(false && inter1->nonLeaf() && (inter1 -> b == NULL
-				|| (inter1 -> a != NULL
-				&& inter1 -> b -> underLine(*inter1 -> a, *b))));
-			act(inter1, inter2);
-		}
-		// or you can check intersection at the end
-	}
-	public : long long query(long long mul) const { // maximize mul*x+y
+		b_size += inter2->size() - inter2->L->size();
+		return act(inter1, inter2->L);
+		/*long double x1 = B->x - A->x, x2 = D->x - C->x;
+		#define remA {a_size += inter1->size() - inter1->R->size(); \
+				return act(inter1 -> R, inter2);}
+		#define remB return act(inter1 -> L, inter2)
+		#define remC return act(inter1, inter2 -> R)
+		#define remD {b_size += inter2->size() - inter2->L->size(); \
+				return act(inter1, inter2 -> L);}
+		if(!A) remA; if(!B) remB; if(!C) remC; if(!D) remD;
+		if(B -> underLine(*A, *C)) remB;
+		if(C -> underLine(*B, *D)) remC;
+		auto x = inter2->first->x;
+		long double x1 = B->x - A->x, x2 = D->x - C->x;
+		if((A->y - C->y) * x1 * x2 + x2 * (B->y - A->y) * (x - A->x)
+			- x1 * (D->y - C->y) * (x - C->x) > 0) remA else remD;*/
+	} public :
+	ll query(ll mul) const { // maximize mul*x+y
 		auto evaluate = [&] (const P & p) { return mul * p.x + p.y; };
+		// if(empty()) return +-INFINITY;
 		if(size() == 1) return evaluate(*first);
 		if(L -> empty()) return R -> query(mul);
 		if(R -> empty()) return L -> query(mul);
-		if(evaluate(*a) > evaluate(*b)) return L -> query(mul);
-		else return R -> query(mul);
+		return (evaluate(*a) > evaluate(*b) ? L : R) -> query(mul);
+	}
+	// returns true if something was removed
+	bool remove(ll A, ll B, ll C) { // cut points above Ax+By+C=0
+		if(empty()) return false;
+		auto evaluate = [&] (const P & p) { return A * p.x + B * p.y; };
+		if(leaf()) {
+			if(evaluate(*first) >= -C) {
+				*this = Node();
+				return true;
+			}
+			return false;
+		}
+		auto left = a ? evaluate(*a) : 0, right = b ? evaluate(*b) : 0;
+		bool modified = 0;
+		if(a && (!b || left > right || left >= -C))
+			modified |= L->remove(A,B,C);
+		if(b && (!a || left < right || right >= -C))
+			modified |= R->remove(A,B,C);
+		if(modified) act();
+		return modified;
 	}
 	void getHull(int a_skip, int b_skip, vector<P> & w) const {
 		if(a_skip + b_skip >= size()) return;
 		if(size() == 1) {
-			assert(first != NULL);
+			assert(first);
 			w.push_back(*first);
 			return;
 		}
-		assert(L != NULL);
-		assert(R != NULL);
-		L -> getHull(a_skip, max(0, b_skip - b_size) + L -> size() - a_size, w);
-		R -> getHull(max(0, a_skip - a_size) + R -> size() - b_size, b_skip, w);
+		assert(L && R);
+		L->getHull(a_skip, max(0, b_skip - b_size) + L->size() - a_size, w);
+		R->getHull(max(0, a_skip - a_size) + R->size() - b_size, b_skip, w);
 	}
 };
-
 const int UPPER = 0, LOWER = 1;
 const int REPS = 2; // 1 means computing UPPER only
 long long done[1 << 20];
@@ -160,10 +131,9 @@ struct Hull {
 		assert(all[tmp] == a); // I didn't get it in the constructor
 		return tmp;
 	}
-	Hull(vector<P> w) {
-		sort(w.begin(), w.end());
-		w.resize(unique(w.begin(), w.end()) - w.begin());
-		all = w;
+	Hull(vector<P> _all) : all(_all) {
+		sort(all.begin(), all.end());
+		all.resize(unique(all.begin(), all.end()) - all.begin());
 		pot = 1;
 		while(pot < (int) all.size()) pot *= 2;
 		for(int rep = 0; rep < REPS; ++rep) {
@@ -220,8 +190,7 @@ struct Hull {
 	}
 };
 const int nax = 6e5 + 5;
-int type[nax], val[nax];
-P p[nax];
+int type[nax], val[nax]; P p[nax];
 int main() {
 	int T;
 	scanf("%d", &T);
@@ -230,7 +199,7 @@ int main() {
 		scanf("%d", &n);
 		vector<P> w(n);
 		for(int i = 0; i < n; ++i) {
-			w[i].read();
+			w[i].read(i);
 			w[i].id = i + 1;
 		}
 		Hull hull(w);
@@ -243,4 +212,5 @@ int main() {
 			}
 		}
 		w = hull.get();
-}}
+	}
+}
