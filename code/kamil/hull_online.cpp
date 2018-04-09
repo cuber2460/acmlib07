@@ -1,25 +1,11 @@
 // adding points online, O(N * log(N))
-#include <bits/stdc++.h>
-using namespace std;
-typedef long long ll;
-struct P {
-	ll x, y;
-	void read() { scanf("%lld%lld", &x, &y); }
-	void write() const { printf("(%lld,%lld), ", x, y); }
-	ll operator * (const P & b) const { return x * b.y - y * b.x; }
-	P operator - (const P & b) const { return P{x - b.x, y - b.y}; }
-};
+typedef long long ll; struct P {ll x, y;// trivia: read, write, *, -}
 struct cmp_x1 {
 	bool operator()(const P & a, const P & b) {
 		return make_pair(a.x, b.x) < make_pair(a.y, b.y);
 	}
 };
-struct cmp_x2 {
-	bool operator()(const P & a, const P & b) {
-		return make_pair(a.x, b.x) > make_pair(a.y, b.y);
-	}
-};
-
+struct cmp_x2 { /* to samo co wyżej ale > */ };
 typedef function<bool(const P &, const P &)> foo;
 typedef set<P, foo> my_set;
 struct Hull {
