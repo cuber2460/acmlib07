@@ -1,8 +1,3 @@
-/* Liczy liczbę liczb pierwszych mniejszych od n w około O(n^(2/3)).          */
-/* Można modyfikować by policzyć np. sumę liczb pierwszych.                   */
-
-using ll=long long;
-
 struct Primes {
 	vector <ll> w, dp;
 	int gdz(ll v) {
