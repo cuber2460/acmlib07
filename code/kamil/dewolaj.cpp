@@ -66,19 +66,11 @@ void rec(int a, int c, const vector<P> & points) {
 	mt[{b,d}] = {a, c};
 	trim(b, d);
 	mt.erase(make_pair(a, c));
-	change(a,b,c,d);
-	change(b,c,a,d);
-	change(a,d,c,b);
-	change(c,d,a,b);
-	rec(a,b,points);
-	rec(b,c,points);
-	rec(c,d,points);
-	rec(d,a,points);
+	change(a,b,c,d); change(b,c,a,d); change(a,d,c,b); change(c,d,a,b);
+	rec(a,b,points); rec(b,c,points); rec(c,d,points); rec(d,a,points);
 }
 void addTriangle(int a, int b, int c) {
-	change(a, b, -1, c);
-	change(a, c, -1, b);
-	change(b, c, -1, a);
+	change(a, b, -1, c); change(a, c, -1, b); change(b, c, -1, a);
 }
 void anyTriangulation(vector<P> points) {
 	sort(points.begin(), points.end(), [](const P & a, const P & b) {

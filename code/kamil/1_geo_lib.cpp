@@ -1,22 +1,16 @@
-/* All methods can be changed to 'const', and arguments to 'const &'.
-If you want to squeeze the running time, you should also create new non-const
-methods like:
-1) void operator += (const P & b) { x += b.x; y += b.y; }
-2) void rotateSelf(ld angle) { ... }
+/* 'const' can be added and for speed create += and similar
 INFO 1
 In methods 'below()' use '< eps' only if you HAVE TO avoid unnecessary objects,
 e.g. if you need the exact size of CH. Using 'eps' may cause discarding
 objects that only slightly improve the result, so try to avoid 'eps'.
-INFO 2
-In 'L3::fix()' uncomment scaling by gcd or sqrt, if needed.
-INFO 3
-How to find an upper envelope of lines Ax+By+C=0, where B > 0.
+INFO 2 -- In 'L3::fix()' uncomment scaling by gcd or sqrt, if needed.
+INFO 3 -- How to find an upper envelope of lines Ax+By+C=0, where B > 0.
 Sort lines by slope increasingly (ties: lower line first). Then a determinant
 of three consecutive non-parallel lines is positive iff all three lines
 are visible from the above, i.e. they form an upside down 'A' shape. */
 template<typename T> T K(T a) { return a * a; }
 #define K(a) K(1LL * (a))
-typedef long double ll; // can be changed to 'long double'
+typedef long long ll; // can be changed to 'long double'
 typedef long double ld;
 // const ld PI = 2 * acos(0);
 const ld eps = 1e-12;
@@ -53,8 +47,7 @@ struct L2 {
 	ld dist(P he) {
 		return abs((he - one) * (he - two)) / one.dist(two);
 	}
-	ld segDist(P he) {
-		// epsilon not needed, but it would work too
+	ld segDist(P he) { // epsilon not needed, but it would work too
 		if((he - two) * normal() < 0 && normal() * (he - one) < 0)
 			return dist(he);
 		return min(one.dist(he), two.dist(he));
@@ -74,7 +67,7 @@ struct L2 {
 		return he + unit_normal * unit_normal.dot(one - he);
 	}
 	P reflect(P he) { return project(he) * 2 - he; }
-	// for CH: sort by slope; below() : change to L3 or compare 'x' of intersections
+// for CH: sort by slope; below() : change to L3 or compare 'x' of intersections
 };
 L2 toL2(ll a, ll b, ll c) {
 	P first;

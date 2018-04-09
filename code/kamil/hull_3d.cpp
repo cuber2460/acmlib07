@@ -167,17 +167,12 @@ void sort_walls(){ //najpierw odpal compute_walls()
     }
 }
 void show(){
-    //~ cout << "Sciany trojkatne:" << endl;
-    //~ for(sciana i : v) cout << p[i.t[0]] << " " << p[i.t[1]] << " " << p[i.t[2]] << endl;
-    //~ cout << "Klasyfikacja:" << endl;
-    //~ REP(i,n) cout << p[i] << " " << klas[i] << endl;
-    //~ cout << "Sciany:" << endl;
-   //~ for(auto pa : mapa) {
-        //~ cout << pa.first << ": ";
-        //~ for(int x : pa.second) cout << p[x] << " "; cout << endl;
-    //~ }
+    //~ cout << "Sciany trojkatne:" << endl; for(sciana i : v)
+    //~ 	cout << p[i.t[0]] << " " << ... p[i.t[2]] << endl;
+    //~ REP(i,n) cout << p[i] << " " << klas[i] << endl; // klasyfikacja
+   //~ for(auto pa : mapa) { //~ cout << pa.first << ": "; // sciany
+        //~ for(int x : pa.second) cout << p[x] << " "; cout << endl; }
     printf("%6lf %6lf\n", area() / 1e12, volume() / 1e18);
-    //~ cout << "Pole: " << area() << endl;
 }
 void test_case() {
 	cin >> n;

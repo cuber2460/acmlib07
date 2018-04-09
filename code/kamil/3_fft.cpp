@@ -8,9 +8,7 @@ struct C { ld real, imag;
 		return C{real * he.real - imag * he.imag,
 				real * he.imag + imag * he.real};
 	}
-	void operator += (const C & he) {
-		real += he.real; imag += he.imag;
-	}
+	void operator += (const C & he) { real += he.real; imag += he.imag; }
 };
 void dft(vector<C> & a, bool rev) {
 	const int n = a.size();
@@ -97,23 +95,19 @@ template<typename T>vector<T> multiply(const vector<T> & a, const vector<T> & b,
 	return ans;
 }
 // compressing up to 2^17 bits into 2 times smaller vectors
-typedef long long ll;
 const ll M = 1 << 17; // M can be smaller if vectors are small
 vector<ll> compress(const vector<ll> & a) {
 	vector<ll> tmp((a.size() + 1) / 2);
 	for(int i = 0; 2 * i + 1 < (int) a.size(); ++i)
 		tmp[i] += a[2 * i] + a[2 * i + 1] * M;
 	if(a.size() % 2) tmp.back() = a.back();
-	return tmp;
-}
+	return tmp; }
 vector<ll> my_mul(const vector<ll> & a, const vector<ll> & b) {
 	vector<ll> tmp = multiply(compress(a), compress(b), false);
 	vector<ll> r(2 * tmp.size() + 1);
 	for(int i = 0; i < (int) tmp.size(); ++i) {
 		r[2*i] += tmp[i] % M; // can be sped-up with bit shifting
-		r[2*i+1] += tmp[i] / M % M;
-		r[2*i+2] += tmp[i] / M / M;
+		r[2*i+1] += tmp[i] / M % M; r[2*i+2] += tmp[i] / M / M;
 	}
 	r.resize(a.size() + b.size() - 1);
-	return r;
-}
+	return r;                            }

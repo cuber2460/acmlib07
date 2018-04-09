@@ -22,5 +22,4 @@ ld rec(ld low, ld high, ld prv, const vector<ld> & old) {
 ld integral(ld low, ld high) {
 	vector<ld> old;
 	ld prv = simp(low, high, 0, old);
-	return rec(low, high, prv, old);
-}
+	return rec(low, high, prv, old);    }
