@@ -1,22 +1,14 @@
 using T = long long;
-class Flow {
-  struct E {
-    int dest;
-    T orig, *lim, *rev;
-  };
+bool iszero(T v) { return !v; /* Zmienić dla doubli. */ }
+struct Flow {
+  struct E { int dest; T orig, *lim, *rev; };
   int zr, uj, n = 0;
   vector<unique_ptr<T>> ts;
   vector<vector<E>> graf;
   vector<int> ptr, odl;
-  
   void vert(int v) {
     n = max(n, v + 1);
-    graf.resize(n);
-    ptr.resize(n);
-    odl.resize(n);
-  }
-  bool iszero(T v) {
-    return !v; // Zmienić dla doubli.
+    graf.resize(n); ptr.resize(n); odl.resize(n);
   }
   void bfs() {
     fill(odl.begin(), odl.end(), 0);
@@ -38,21 +30,16 @@ class Flow {
       E& e = graf[v][i];
       if (odl[e.dest] == odl[v] + 1 and !iszero(*e.lim) and
           !iszero(wez = dfs(e.dest, min(*e.lim, lim)))) {
-        ret += wez;
-        *e.lim -= wez;
-        *e.rev += wez;
-        lim -= wez;
+        ret += wez; *e.lim -= wez; *e.rev += wez; lim -= wez;
         if (iszero(lim)) break;
       }
     }
     return ret;
   }
- public:
   void add_edge(int u, int v, T lim, bool bi = false /* bidirectional? */) {
     vert(max(u, v));
     T *a = new T(lim), *b = new T(lim * bi);
-    ts.emplace_back(a);
-    ts.emplace_back(b);
+    ts.emplace_back(a); ts.emplace_back(b);
     graf[u].push_back(E{v, lim,      a, b});
     graf[v].push_back(E{u, lim * bi, b, a});
   }
@@ -72,17 +59,13 @@ class Flow {
   vector<int> cut() {
     vector<int> ret;
     bfs();
-    for (int i = 0; i < n; i++)
-      if (odl[i])
-        ret.push_back(i);
+    for (int i = 0; i < n; i++) if (odl[i]) ret.push_back(i);
     return ret;
   }
   map<pair<int, int>, T> get_flowing() {  // Tam gdzie plynie 0 może nie być
     map<pair<int, int>, T> ret;           // krawędzi.
-    for (int i = 0; i < n; i++)
-      for (E& e : graf[i])
-        if (*e.lim < e.orig)
-          ret[make_pair(i, e.dest)] += e.orig - *e.lim;
+    for (int i = 0; i < n; i++) for (E& e : graf[i])
+        if (*e.lim < e.orig) ret[make_pair(i, e.dest)] += e.orig - *e.lim;
     for (auto& i : ret) {
       const pair<int, int> rev{i.first.second, i.first.first};
       const T x = min(i.second, ret[rev]);
