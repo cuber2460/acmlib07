@@ -4,19 +4,17 @@
 /* Wszystko indeksujemy od 1, ale podajemy wskaźnik na 0                      */
 
 struct suffix_array {
-  vector<pair<pair<int,int>, int>> wek;  // do log^2
-  vector<vector<int>> radix1;  // do log
-  vector<vector<int>> radix2;  // do log
-  vector<int> dru;  // do log
-  vector<pair<int,int>> ska;  // do log
+  vector<pair<pair<int,int>, int>> wek;   // do log^2
+  vector <int> ran;                       // do log
+  vector <int> ile;                       // do log
+  vector <int> kol;
   
   //n to limit na długość słowa
   suffix_array(int n) {
     wek.resize(n + 1, make_pair(make_pair(-1, -1), -1));
-    radix1.resize(n + 1);
-    radix2.resize(n + 1);
-    dru.resize(n + 1, -1);
-    ska.resize(n + 1, make_pair(-1, -1));
+    ran.resize(2 * n + 1);  
+    ile.resize(n + 2);
+    kol.resize(n + 2);
   }
 
   void sa_log_2(char *tab, int n, int *sa, int *ran, int *lcp) {
@@ -55,52 +53,47 @@ struct suffix_array {
     }
   }
 
-  void sa_log(char *tab, int n, int *sa, int *ran, int *lcp) {
+  inline void bucketSort(int *val, int *tab, int n) {
+    for (int i = 1; i <= n; ++i) {
+      ile[1 + val[i]]++;
+      kol[i] = tab[i];
+    }
+    for (int i = 1; i <= n; ++i) ile[i] += ile[i - 1];
+    for (int i = 1; i <= n; ++i) {
+      tab[++ile[val[kol[i]]]] = kol[i];
+    }
+    fill(ile.begin(), ile.end(), 0);
+  }
+
+  void sa_log(char *tab, int n, int *sa, int *rank, int *lcp) {
+    vector <int> num(256);
+    for (int i = 1; i <= n; ++i) num[(int) tab[i]] = 1;
+    for (int i = 1; i < 256; ++i) num[i] += num[i - 1];
+    for (int i = 1; i <= n; ++i) ran[i] = num[(int) tab[i]], sa[i] = i;
+
+    for (int len = 1; len < n; len *= 2) {
+      bucketSort(ran.data() + len, sa, n);
+      bucketSort(ran.data(), sa, n);
+      
+      int nval = 0;
+      for (int i = 1; i <= n; ++i) {
+        rank[sa[i]] = nval += (i == 1 || 
+        ran[sa[i]] != ran[sa[i - 1]] || 
+        ran[sa[i] + len] != ran[sa[i - 1] + len]);
+      }
+      for (int i = 1; i <= n; ++i) ran[i] = rank[i];
+      if (nval == n) break;
+    }
+    
     int l = 0;
-    for (int i = 1; i <= n; i++)
-      ska[i] = make_pair(tab[i], i);
-    sort(ska.begin() + 1, ska.begin() + 1 + n);
-    ska[0] = ska[1];
-    l = 1;
-    for (int i = 1; i <= n; i++) {
-      if (ska[i].first != ska[i - 1].first)
-        l++;
-      ran[ska[i].second] = l;
-    }
-    for (int h = 1; h <= n; h *= 2) {
-      for (int i = 0; i <= n; i++) {
-        dru[i] = 0;
-        radix1[i].clear();
-        radix2[i].clear();
-      }
-      for (int i = 1; i + h <= n; i++)
-        dru[i] = ran[i + h];
-      for (int i = 1; i <= n; i++)
-        radix1[dru[i]].push_back(i);
-      for (int i = 0; i <= n; i++)
-        for (int j = 0; j < (int) radix1[i].size(); j++)
-          radix2[ran[radix1[i][j]]].push_back(radix1[i][j]);
-      l = 0;
-      for (int i = 0; i <= n; i++) {
-        for (int j = 0; j < (int) radix2[i].size(); j++) {
-          if (!j || dru[radix2[i][j]] != dru[radix2[i][j - 1]])
-            l++;
-          ran[radix2[i][j]] = l;
-        }
-      }
-    }
-    for (int i = 1; i <= n; i++)
-      sa[ran[i]] = i;
-    l = 0;
     for (int i = 1; i <= n; i++) {
       l = max(0, l - 1);
-      if (ran[i] == n) {
+      if (rank[i] == n) {
         lcp[n] = 0;
         continue;
       }
-      while (tab[i + l] == tab[sa[ran[i] + 1] + l])
-        l++;
-      lcp[ran[i]] = l;
+      while (tab[i + l] == tab[sa[rank[i] + 1] + l]) l++;
+      lcp[rank[i]] = l;
     }
   }
 };
