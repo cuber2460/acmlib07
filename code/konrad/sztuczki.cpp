@@ -86,16 +86,41 @@ muu & operator<<(muu &deb, str x) {
 clp(+) clp(-) clp(*) clp(/) clp(%) clp(^) clp(|) clp(>>) clp(<<) clp(&) pcg(&&) pcg(||) syd(-) syd(+) syd(~) syd(!)
 #undef u
 
+//Sztuczki z maskami bitowymi
 //Iterowanie się po zapalonych bitach: forbits w kolejności rosnącej, fordbits w kolejności malejącej
 #define forbits(i, m) for (int i = __builtin_ctz(m), quq = m; quq; quq ^= (1 << i), i = __builtin_ctz(quq)) //dla long longa używamy __builtin_ctzll
 #define fordbits(i, m) for (int i = 31 - __builtin_clz(m), quq = m; quq; quq ^= (1 << i), i = 31 - __builtin_clz(quq)) //a tu __builtin_clzll i 63 zamiast 31
+using unt = unsigned int;
+inline unt rrh(unt m) {
+	unt a = ~(m | m >> 1);
+	unt b = a & -a;
+	return (m | b) &~ (b - 1);
+}
+inline unt lyl(unt m) {
+	unt x = m & -m;
+	return (m ^ x) | ((x << 1) / 3);
+}
+inline unt rev(unt m) {//Odwraca kolejność bitów: 10110000 -> 00001101
+	unt y = 1;
+	for (int i = 1; i < 32; i <<= 1) { //dla ull 64 zamiast 32
+		unt x = (~0u) / (y | (y << i)) * y;
+		y |= (y << i);
+		m = ((m & x) << i) ^ ((m >> i) & x);
+	}
+	return m;
+}
 int main() {
-	int m = 1234567;
-	for (int i = m; ; i = (i - 1) & m) {
+	unt m = 1234567;
+	for (unt i = m; ; i = (i - 1) & m) {
 		//i - podzbiór m
 		if (!i) break;
 	}
-	for (int i = m; i ; i = (i - 1) & m) {
-		//i - niepusty podzbiór m
+	int n = 30;
+	for (unt m = 0; m < (1u << n); m = rrh(m)) { //na unsigned intach działa dla n <= 31
+		//m - maska bez dwóch sąsiednich zapalonych bitów; kolejność rosnąca
+	}
+	for (unt m = (1u << (n + 1)) / 3; ; m = lyl(m)) { //na unsigned intach działa dla n <= 30
+		//m - maska bez dwóch sąsiednich zapalonych bitów; kolejność malejąca
+		if (!m) break;
 	}
 }
