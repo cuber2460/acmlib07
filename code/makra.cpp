@@ -28,17 +28,19 @@ sim mor rge<c> u) {
 #else
 sim mor const c&) { ris; }
 #endif
+muu & operator()() { ris; }
 };
 #define imie(r...) "[" #r ": " << (r) << "] "
 #define imask(r...) "[" #r ": " << bitset<8 * sizeof(r)>(r) << "] "
 #define arr(a, i) "[" #a imie(i) ": " << a[i] << "] "
 #define arr2(a, i, j) "[" #a imie(i) imie(j) ": " << a[i][j] << "] "
-#define debug muu() << __FUNCTION__ << "#" << __LINE__ << ": "
+#define debug (muu() << __FUNCTION__ << "#" << __LINE__ << ": ")
 
 int main() {
   int a = 81281;
   set<int> b{3, 5, 7};
   debug << imie(a) imie(b) imie(vector<int>{1, 2, 3}) << 10 << imask(0xbaca);
+  debug() << imie(a) imie(b) imie(vector<int>{1, 2, 3}) << 10 << imask(0xbaca);
   // -std=c++11 -g -DLOCAL -Wshadow -Wall -fsanitize=undefined -fsanitize=address -D_GLIBCXX_DEBUG
   return 0;
 }
