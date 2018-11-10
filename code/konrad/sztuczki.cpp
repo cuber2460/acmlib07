@@ -37,8 +37,9 @@ struct muu {
 	#else
 	sim mor const c&) {ris;}
 	#endif
+	muu & operator()(){ris;}
 };
-#define debug muu() << __FUNCTION__ << "#" << __LINE__ << ": "
+#define debug (muu() << __FUNCTION__ << "#" << __LINE__ << ": ")
 #define imie(r) "[" #r ": " << (r) << "] "
 #define imask(r) "[" #r ": " << bitset<8 * sizeof(r)>(r) << "] "
 #define arr(a, i) "[" #a imie(i) ": " << a[i] << "] "
@@ -86,6 +87,8 @@ muu & operator<<(muu &deb, str x) {
 clp(+) clp(-) clp(*) clp(/) clp(%) clp(^) clp(|) clp(>>) clp(<<) clp(&) pcg(&&) pcg(||) syd(-) syd(+) syd(~) syd(!)
 #undef u
 
+
+
 //Sztuczki z maskami bitowymi
 //Iterowanie się po zapalonych bitach: forbits w kolejności rosnącej, fordbits w kolejności malejącej
 #define forbits(i, m) for (int i = __builtin_ctz(m), quq = m; quq; quq ^= (1 << i), i = __builtin_ctz(quq)) //dla long longa używamy __builtin_ctzll
@@ -100,27 +103,45 @@ inline unt lyl(unt m) {
 	unt x = m & -m;
 	return (m ^ x) | ((x << 1) / 3);
 }
+inline unt ros(unt m) {
+	unt a = m & -m;
+	unt b = ~((a - 1) ^ m);
+	unt c = b & -b;
+	unt d = (c >> (1 + __builtin_ctz(a))) - 1;
+	return c | (m & ~(c - 1)) | d;
+}
 inline unt rev(unt m) {//Odwraca kolejność bitów: 10110000 -> 00001101
-	unt y = 1;
-	for (int i = 1; i < 32; i <<= 1) { //dla ull 64 zamiast 32
-		unt x = (~0u) / (y | (y << i)) * y;
-		y |= (y << i);
-		m = ((m & x) << i) ^ ((m >> i) & x);
-	}
+	const static unt s1 = (~0u) / 3, s2 = (~0u) / 5, s4 = (~0u) / 17, s8 = (~0u) / 257, s16 = (~0u) / 65537;
+	//Dla ull jeszcze s32 = (~0u), a w tych na górze zamieniamy 0u na 0ull
+	#define her(i) m = ((m & s##i) << i) | ((m >> i) & s##i);
+	her(1) her(2) her(4) her(8) her(16) //Dla ull jeszcze: her(32)
 	return m;
 }
 int main() {
-	unt m = 1234567;
-	for (unt i = m; ; i = (i - 1) & m) {
-		//i - podzbiór m
+	int n = 30, k = 15;
+	unt mm = 1234567;
+	for (unt i = mm; ; i = (i - 1) & mm) {
+		//i - podzbiór mm
 		if (!i) break;
 	}
-	int n = 30;
-	for (unt m = 0; m < (1u << n); m = rrh(m)) { //na unsigned intach działa dla n <= 31
-		//m - maska bez dwóch sąsiednich zapalonych bitów; kolejność rosnąca
+	for (unt i = 0; i < (1u << n); i = rrh(i)) { //na unsigned intach działa dla n <= 31
+		//i - maska bez dwóch sąsiednich zapalonych bitów; kolejność rosnąca
 	}
-	for (unt m = (1u << (n + 1)) / 3; ; m = lyl(m)) { //na unsigned intach działa dla n <= 30
+	for (unt i = (1u << (n + 1)) / 3; ; i = lyl(i)) { //na unsigned intach działa dla n <= 30
 		//m - maska bez dwóch sąsiednich zapalonych bitów; kolejność malejąca
-		if (!m) break;
+		if (!i) break;
+	}
+	
+	//Iterowanie się po maskach w takiej kolejności, że każde dwie kolejne różnią się jednym bitem
+	//go(0)
+	for (unt quq = 1, m = 0; quq < (1u << n); ++quq) {
+		int i = __builtin_ctz(quq);
+		m ^= (1 << i);
+		//go(m) - kolejna maska
+	}
+
+	//Iterowanie się po maskach mających dokładnie k zapalonych bitów. Działa dla k >= 1
+	for (unt m = ((1u << k) - 1); m < (1u << n); m = ros(m)) {
+		//m - maska z dokładnie k zapalonymi bitami. kolejność rosnąca
 	}
 }
