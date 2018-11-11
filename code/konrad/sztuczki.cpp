@@ -87,10 +87,26 @@ muu & operator<<(muu &deb, str x) {
 clp(+) clp(-) clp(*) clp(/) clp(%) clp(^) clp(|) clp(>>) clp(<<) clp(&) pcg(&&) pcg(||) syd(-) syd(+) syd(~) syd(!)
 #undef u
 
-
-
+//Mnożenie long longów modulo (jak nie ma __int128)
+//zakłada, że |a|, |b| < m
+//dla m <= 1e12: float
+//dla m <= 1e17: double
+//dla m > 1e17: long double
+using ll = long long;
+ll __attribute__ ((no_sanitize_undefined)) mul(ll a,ll b, ll m) {
+	ll q = ((double)a * b / m);
+	ll r = (a*b - q*m) % m;  //ma się przekręcać
+	if (r < 0)
+		r += m;
+	return r;
+}
+ll mul2(ll a, ll b, ll c) {
+	return a * (__int128) b % c;
+}
 //Sztuczki z maskami bitowymi
 //Iterowanie się po zapalonych bitach: forbits w kolejności rosnącej, fordbits w kolejności malejącej
+//Zagnieżdżanie pętli forbits/fordbits wywali warning: declaration of ‘quq’ shadows a previous local ... in expansion of macro ‘forbits’
+//Nie należy się nim przejmować
 #define forbits(i, m) for (int i = __builtin_ctz(m), quq = m; quq; quq ^= (1 << i), i = __builtin_ctz(quq)) //dla long longa używamy __builtin_ctzll
 #define fordbits(i, m) for (int i = 31 - __builtin_clz(m), quq = m; quq; quq ^= (1 << i), i = 31 - __builtin_clz(quq)) //a tu __builtin_clzll i 63 zamiast 31
 using unt = unsigned int;
