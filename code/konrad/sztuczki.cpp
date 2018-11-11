@@ -86,6 +86,54 @@ muu & operator<<(muu &deb, str x) {
 //clp: razem z odpowiednim operatorem przypisania, pcg: bez niego, syd: operator jednoargumentowy
 clp(+) clp(-) clp(*) clp(/) clp(%) clp(^) clp(|) clp(>>) clp(<<) clp(&) pcg(&&) pcg(||) syd(-) syd(+) syd(~) syd(!)
 #undef u
+//Struct liczący na liczbach wymiernych modulo
+//w trybie debug: modulo i na doublach, w trybie nondebug tylko modulo
+//Domyślna wartość structa zet_p, to 0
+//Wspiera operatory +, -, *, /, =, +=, -=, *=, /=, - jednoargumentowy
+//Działa też jeśli jednym argumentem jest zet_p, a drugim liczba ((unsigned) int / long long)
+//Wypisywanie wyniku: printf("%d\n", x.get());
+const int mod = 1e9 + 7;
+long long inv(long long b) {
+	assert(b);
+	int e = mod - 2;
+	long long r = 1;
+	while (e) {
+		if (e & 1)
+			r = r * b % mod;
+		b = b * b % mod;
+		e >>= 1;
+	}
+	return r;
+}
+struct zet_p {
+	int v;
+	#ifdef LOCAL
+	long double w;
+	sim> zet_p(c r = 0) : v(r % mod), w(r) {}
+	sim> zet_p(c x, long double y) : v(x % mod), w(y) {}
+	#define rer(o, f) zet_p operator o (zet_p x) {return zet_p(v f, w o x.w);} wer(o)
+	#else
+	sim> zet_p(c r = 0) : v(r % mod) {}
+	#define rer(o, f) zet_p operator o (zet_p x) {return zet_p(v f);} wer(o)
+	#endif
+	int get() {return (v + mod) % mod;}
+	zet_p operator-(){ris * -1;}
+	#define wer(o) zet_p & operator o##=(zet_p x) {ris = *this o x;}
+	rer(+, +x.v) rer(-, -x.v) rer(*, * 1ll * x.v) rer(/, * inv(x.v))
+};
+#define ccy(o) sim> zet_p operator o(c a, zet_p b) {return zet_p(a) o b;}
+ccy(+) ccy(-) ccy(*) ccy(/)
+#ifdef LOCAL
+muu & operator<<(muu & d, zet_p x) {
+	return d << "<" << x.get() << "=" << x.w << ">";
+}
+#endif
+void main2() {
+	int x;
+	scanf("%d", &x);
+	zet_p a = x;
+	printf("%d\n", (a * a).get()); //dopilnuje, żeby get było z przedziału [0, mod)
+}
 
 //Mnożenie long longów modulo (jak nie ma __int128)
 //zakłada, że |a|, |b| < m
@@ -134,6 +182,7 @@ inline unt rev(unt m) {//Odwraca kolejność bitów: 10110000 -> 00001101
 	return m;
 }
 int main() {
+	main2();
 	int n = 30, k = 15;
 	unt mm = 1234567;
 	for (unt i = mm; ; i = (i - 1) & mm) {
