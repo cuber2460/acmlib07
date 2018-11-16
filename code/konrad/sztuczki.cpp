@@ -57,9 +57,11 @@ void main1() {
 struct str {
 	int a, b, c;
 };
+#ifdef LOCAL
 muu & operator<<(muu &deb, str x) {
 	return deb << "[" << x.a << " * x + " << x.b << " * y = " << x.c << "]";
 }
+#endif
 
 //Operatory na parach: (a, b) + c = (a + c, b + c), (a, b) + (c, d) = (a + c, b + d), a + (b, c) = (a + b, a + c)
 //(a, b) += (c, d) -> (a + c, b + d) (a, b) += c -> (a + c, b + c)
@@ -86,14 +88,15 @@ muu & operator<<(muu &deb, str x) {
 //clp: razem z odpowiednim operatorem przypisania, pcg: bez niego, syd: operator jednoargumentowy
 clp(+) clp(-) clp(*) clp(/) clp(%) clp(^) clp(|) clp(>>) clp(<<) clp(&) pcg(&&) pcg(||) syd(-) syd(+) syd(~) syd(!)
 #undef u
+
 //Struct liczący na liczbach wymiernych modulo
-//w trybie debug: modulo i na doublach, w trybie nondebug tylko modulo
+//w trybie debug: modulo i na long doublach, w trybie nondebug tylko modulo
 //Domyślna wartość structa zet_p, to 0
-//Wspiera operatory +, -, *, /, =, +=, -=, *=, /=, - jednoargumentowy
+//Wspiera operatory +, -, *, /, =, +=, -=, *=, /=, ==, - jednoargumentowy
 //Działa też jeśli jednym argumentem jest zet_p, a drugim liczba ((unsigned) int / long long)
 //Wypisywanie wyniku: printf("%d\n", x.get());
 const int mod = 1e9 + 7;
-long long inv(long long b) {
+long long inv(long long b) {//To jest oczywiście dla mod pierwszego
 	assert(b);
 	int e = mod - 2;
 	long long r = 1;
@@ -105,34 +108,34 @@ long long inv(long long b) {
 	}
 	return r;
 }
+#ifdef LOCAL 
+#define loc(r...) r
+#else
+#define loc(...)
+#endif
 struct zet_p {
 	int v;
-	#ifdef LOCAL
-	long double w;
-	sim> zet_p(c r = 0) : v(r % mod), w(r) {}
-	sim> zet_p(c x, long double y) : v(x % mod), w(y) {}
-	#define rer(o, f) zet_p operator o (zet_p x) {return zet_p(v f, w o x.w);} wer(o)
-	#else
-	sim> zet_p(c r = 0) : v(r % mod) {}
-	#define rer(o, f) zet_p operator o (zet_p x) {return zet_p(v f);} wer(o)
-	#endif
+	loc(long double w;)
+	sim = int> zet_p(c r = 0) : v(r % mod) loc(, w(r)) {}
+	loc(sim> zet_p(c a, long double b) : v(a % mod), w(b) {})
+	#define rer(o, f) zet_p operator o (zet_p y) {return zet_p(v f loc(, w o y.w));} \
+		zet_p & operator o##=(zet_p y) {ris = *this o y;}
+	rer(+, +y.v) rer(-, -y.v) rer(*, * 1ll * y.v) rer(/, * inv(y.v))
 	int get() {return (v + mod) % mod;}
-	zet_p operator-(){ris * -1;}
-	#define wer(o) zet_p & operator o##=(zet_p x) {ris = *this o x;}
-	rer(+, +x.v) rer(-, -x.v) rer(*, * 1ll * x.v) rer(/, * inv(x.v))
+	zet_p operator-(){return zet_p(-v loc(, -w));}
+	bool operator==(zet_p y) {return (v - y.v) % mod == 0;}
 };
 #define ccy(o) sim> zet_p operator o(c a, zet_p b) {return zet_p(a) o b;}
+//Jeśli chcemy, żeby działały też operatory na parach (zet_p, coś), to dajemy
+//#define ccy(o) sim> typename enable_if<is_integral<c>::value, zet_p>::type operator o(c a, zet_p b) {return zet_p(a) o b;}
 ccy(+) ccy(-) ccy(*) ccy(/)
-#ifdef LOCAL
-muu & operator<<(muu & d, zet_p x) {
-	return d << "<" << x.get() << "=" << x.w << ">";
-}
-#endif
+sim> bool operator == (c a, zet_p b) {return zet_p(a) == b;}
+loc(muu & operator<<(muu & d, zet_p y) {return d << "<" << y.get() << "=" << y.w << ">";})
 void main2() {
 	int x;
 	scanf("%d", &x);
 	zet_p a = x;
-	printf("%d\n", (a * a).get()); //dopilnuje, żeby get było z przedziału [0, mod)
+	printf("%d\n", (2 * a * a - 1).get()); //dopilnuje, żeby get było z przedziału [0, mod)
 }
 
 //Mnożenie long longów modulo (jak nie ma __int128)
