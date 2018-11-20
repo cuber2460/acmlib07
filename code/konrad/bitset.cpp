@@ -4,9 +4,14 @@
 #include <bits/stdc++.h>
 #define tab _M_w
 using namespace std;
+#ifdef CF //u nas system 32 bitowy, a na sprawdzaczce 64, lub odwrotnie
+using ull = typename remove_reference<decltype(bitset<1024>().tab[0])>::type;
+int popc(unsigned long long x) {return __builtin_popcountl(x);}
+int popc(unsigned int x) {return __builtin_popcount(x);}
+//I wszędzie zamiast __builtin_popcountl używamy popc
+#else
 using ull = unsigned long long;
-//Jeśli na sprawdzaczce jest system 32bitowy a u nas 64 lub odwrotnie, to
-//using ull = typename remove_reference<decltype(bitset<1024>().tab[0])>::type;
+#endif
 const int SIZE = 8 * sizeof(ull);
 const int LOG = __builtin_ctz(SIZE);
 //Iteruje sie po przedziale [l, r)
@@ -36,7 +41,7 @@ const int LOG = __builtin_ctz(SIZE);
 		}\
 	}\
 }
-//N musi byc >= 128
+//N musi byc >= 128 i podzielne przez 64
 //Wszystkie funkcje operuja na przedzialach [l, r)
 template <size_t N>
 void flip(int l, int r, bitset<N> & b) {
