@@ -266,6 +266,33 @@ Circle apollonius(P a, P b, ld ratio) { // ratio = distA / distB
 	return Circle{(in + out) / 2, in.dist(out) / 2};
 }
 
+//Zwraca punkt X minimalizujący |XA| + |XB| + |XC| (punkt Fermata)
+P fermat(P A, P B, P C) {
+	static const ld dwa3 = 2 * sqrt(3);
+	ld a = (B - C).dot(B - C);
+	ld b = (C - A).dot(C - A);
+	ld c = (A - B).dot(A - B);
+	ld S = abs((A - B) * (B - C)) * dwa3;
+	ld u = K(a) - 2 * K(b - c) + a * (b + c + S);
+	ld v = K(b) - 2 * K(c - a) + b * (c + a + S);
+	ld w = K(c) - 2 * K(a - b) + c * (a + b + S);
+	if (v < 0 && w < 0) return A;
+	if (w < 0 && u < 0) return B;
+	if (u < 0 && v < 0) return C;
+	return (A * u + B * v + C * w) / (u + v + w);
+}
+
+//Zwraca środek okręgu opisanego
+P opisany(P A, P B, P C) {
+	ld a = (B - C).dot(B - C);
+	ld b = (C - A).dot(C - A);
+	ld c = (A - B).dot(A - B);
+	ld u = a * (b + c - a);
+	ld v = b * (c + a - b);
+	ld w = c * (a + b - c);
+	return (A * u + B * v + C * w) / (u + v + w);
+}
+
 int main() {
 	debug() << imie(Circle{P{2,7},10}.tangency(Circle{P{-15,-3},4}));
 	debug() << imie(apollonius(P{0,0}, P{10,0}, 0.5));
