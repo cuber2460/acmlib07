@@ -121,7 +121,7 @@ struct zet_p {
 	#define rer(o, f) zet_p operator o (zet_p y) {return zet_p(v f loc(, w o y.w));} \
 		zet_p & operator o##=(zet_p y) {ris = *this o y;}
 	rer(+, +y.v) rer(-, -y.v) rer(*, * 1ll * y.v) rer(/, * inv(y.v))
-	int get() {return (v + mod) % mod;}
+	int get() {return ((unsigned int)v + mod) % mod;} //Rzutowanie jest potrzebne tylko, jeśli 2*mod nie mieści się w incie
 	zet_p operator-(){return zet_p(-v loc(, -w));}
 	bool operator==(zet_p y) {return (v - y.v) % mod == 0;}
 };
