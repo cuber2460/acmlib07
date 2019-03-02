@@ -31,25 +31,25 @@ struct suffix_array {
       for (int i = 1; i <= n; i++)
         wek[i].second = i;
       sort(wek.begin() + 1, wek.begin() + 1 + n);
-      l = 0;
+      le = 0;
       for (int i = 1; i <= n; i++) {
         if (wek[i].first != wek[i - 1].first)
-          l++;
-        ran[wek[i].second] = l;
+          le++;
+        ran[wek[i].second] = le;
       }
     }
     for (int i = 1; i <= n; i++)
       sa[ran[i]] = i;
-    l = 0;
+    le = 0;
     for (int i = 1; i <= n; i++) {
-      l = max(0, l - 1);
+      le = max(0, le - 1);
       if (ran[i] == n) {
         lcp[n] = 0;
         continue;
       }
-      while (tab[i + l] == tab[sa[ran[i] + 1] + l])
-        l++;
-      lcp[ran[i]] = l;
+      while (tab[i + le] == tab[sa[ran[i] + 1] + le])
+        le++;
+      lcp[ran[i]] = le;
     }
   }
 
@@ -71,7 +71,7 @@ struct suffix_array {
     for (int i = 1; i < 256; ++i) num[i] += num[i - 1];
     for (int i = 1; i <= n; ++i) ran[i] = num[(int) tab[i]], sa[i] = i;
 
-    for (int len = 1; len < n; len *= 2) {
+    for (int len = 1; len <= n; len *= 2) {
       bucketSort(ran.data() + len, sa, n);
       bucketSort(ran.data(), sa, n);
       
@@ -85,15 +85,15 @@ struct suffix_array {
       if (nval == n) break;
     }
     
-    int l = 0;
+    int le = 0;
     for (int i = 1; i <= n; i++) {
-      l = max(0, l - 1);
+      le = max(0, le - 1);
       if (rank[i] == n) {
         lcp[n] = 0;
         continue;
       }
-      while (tab[i + l] == tab[sa[rank[i] + 1] + l]) l++;
-      lcp[rank[i]] = l;
+      while (i + le <= n && tab[i + le] == tab[sa[rank[i] + 1] + le]) le++;
+      lcp[rank[i]] = le;
     }
   }
 };
