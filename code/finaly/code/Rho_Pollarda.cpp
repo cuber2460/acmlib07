@@ -1,18 +1,7 @@
-//vector<ll> witness = {2, 7, 61}; // < 4759123141
 vector<ll> witness = {2, 325, 9375, 28178, 450775, 9780504, 1795265022}; // < 2^64
-ll mnoz(ll a, ll b, ll mod) {
-  return (__int128(a)*b)%mod;  
-}
-ll pot(ll a, ll b, ll mod) {
-  ll res = 1;
-  while (b) {
-    if (b&1)
-      res = mnoz(res,a,mod);
-    a = mnoz(a,a,mod);
-    b /= 2;
-  }
-  return res;
-}
+//vector<ll> witness = {2, 7, 61}; // < 4759123141
+ll mnoz(ll a, ll b, ll mod) {return (__int128(a)*b)%mod;}
+ll pot(ll a, ll b, ll mod) {/*...*/}
 bool test(ll n) {
   if (n == 2)
     return true;
@@ -28,7 +17,7 @@ bool test(ll n) {
     ll x = pot(i,d,n);
     if (x != 1) {
       bool zlozona = true;
-      REP(j,s) {
+      for (int j = 0; j < s; ++j) {
         if (x == n-1) {
           zlozona = false;
           break;
@@ -41,19 +30,11 @@ bool test(ll n) {
   }
   return true;
 }
-ll nwd(ll a, ll b) {
-  return a ? nwd(b%a,a) : b;
-}
-ll f(ll x, ll mod, ll c) {
-  ll y = mnoz(x,x,mod) + c;
-  if (y > mod)
-    y -= mod;
-  return y;
-}
+ll f(ll x, ll mod, ll c) {return mnoz(x,x,mod) + c;}
 void rho(ll n, vector<ll> &v) {
   if (n <= 1) return;
   if (test(n)) {
-    v.pb(n);
+    v.push_back(n);
     return;
   }
   ll c = 1;
@@ -62,7 +43,7 @@ void rho(ll n, vector<ll> &v) {
     while (d == 1) {
       x = f(x,n,c);
       y = f(f(y,n,c),n,c);
-      d = nwd(abs(x-y),n);
+      d = __gcd(abs(x-y),n);
     }
     if (d < n) {
       rho(d, v);
@@ -74,9 +55,9 @@ void rho(ll n, vector<ll> &v) {
 }
 void rozklad(ll n, vector<ll> &v) {
   int BLOK = 100;
-  FOR(i,2,BLOK) while (n%i == 0) {
+  for (int i = 2; i < BLOK; ++i) while (n%i == 0) {
     n /= i;
-    v.pb(i);
+    v.push_back(i);
   }
   rho(n,v);
   sort(v.begin(),v.end());
