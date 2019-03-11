@@ -14,7 +14,7 @@ pll crt2(ll p, ll a, ll q, ll b) {
 	ll nwd=x*a+y*b;          // to zwraca (-1, -1).
 	if ((p%nwd)!=(q%nwd))
 		return {-1, -1};
-	a/=nwd; b%=nwd;
+	a/=nwd; b/=nwd;
 	ll nww=a*b;
 	ll ret=mno(x*a, q/nwd, nww)+mno(y*b, p/nwd, nww);
 	if ((ret%=nww)<0) ret+=nww;
