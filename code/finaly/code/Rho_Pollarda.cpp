@@ -1,7 +1,7 @@
 vector<ll> witness = {2, 325, 9375, 28178, 450775, 9780504, 1795265022}; // < 2^64
 //vector<ll> witness = {2, 7, 61}; // < 4759123141
 ll mnoz(ll a, ll b, ll mod) {return (__int128(a)*b)%mod;}
-ll pot(ll a, ll b, ll mod) {/*...*/}
+ll pot(ll b, ll e, ll mod) {/*...*/}
 bool test(ll n) {
   if (n == 2)
     return true;
@@ -37,8 +37,7 @@ void rho(ll n, vector<ll> &v) {
     v.push_back(n);
     return;
   }
-  ll c = 1;
-  while(true) {
+	for (ll c = 1;;++c) {
     ll x = 2, y = 2, d = 1;
     while (d == 1) {
       x = f(x,n,c);
@@ -50,7 +49,6 @@ void rho(ll n, vector<ll> &v) {
       rho(n/d,v);
       return;
     }
-    ++c;
   }
 }
 void rozklad(ll n, vector<ll> &v) {
