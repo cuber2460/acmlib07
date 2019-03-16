@@ -1,4 +1,4 @@
-const int nax=100000;
+const int nax = 100000;
 vector <int> implies[2*nax]; //wymuszenia, 2*x to zmienna 2*x+1 to jej negacja
 int sat_val[2*nax],sat_vis[2*nax],sat_sort[2*nax],sat_ile;
 inline void sat_or(int a,int b){
@@ -12,10 +12,10 @@ void sat_dfs_mark(int x){
 }
 void sat_dfs(int x){
   sat_vis[x]=1;
-  for (int i : implies[x^1]) if (!sat_vis[i^1]) sat_dfs(i^1);
-  sat_sort[--sat_ile]=x;
+  for (int i : implies[x]) if (!sat_vis[i]) sat_dfs(i);
+  sat_sort[--sat_ile]=x^1;
 }
-int sat2(int n) {//n - liczba zmiennych, zmienne numerujemy od 0
+bool sat2(int n) {//n - liczba zmiennych, zmienne numerujemy od 0
 #define REP for (int i = 0; i < 2 * n; ++i)
   sat_ile=2 * n;
   REP sat_vis[i]=0,sat_val[i]=-1;
