@@ -213,3 +213,7 @@ int main() {
 		//m - maska z dokładnie k zapalonymi bitami. kolejność rosnąca
 	}
 }
+//Szybsza unordered_mapa
+#include <ext/pb_ds/assoc_container.hpp>
+using namespace __gnu_pbds;
+sim, class m> using my_unordered_map = cc_hash_table<c, m, hash<c>>;
