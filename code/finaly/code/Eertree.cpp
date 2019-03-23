@@ -3,7 +3,6 @@ int len[maxn], link[maxn], to[maxn][alfa], slink[maxn], diff[maxn];
 int ans[maxn], z[maxn], sz, last, n;
 pair <int,int> series_ans[maxn];
 char s[maxn];
-
 void init() {
 	s[n++]=len[1]=-1;
 	link[0]=1;
