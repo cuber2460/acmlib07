@@ -22,7 +22,6 @@ struct PlanarityTest {
   vector<VI> adj, dn, up; vector<pair<int,int>> e_up;
   vector<bool> vis; VI low, pre;
   FU fu;
-
   void DfsLow(int v, int p) {
     vis[v] = true; low[v] = pre[v] = tm++;
     for (int s : adj[v]) {
