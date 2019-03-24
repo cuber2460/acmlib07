@@ -1,6 +1,6 @@
 using P = pair <ld, ld>;
-using circle = pair <P, ld>;
-const int nax = 1e5 + 44;
+using circle = pair <P, ld>; //Środek, kwadrat promienia
+const ld eps = 1e-10;
 pii in[nax];
 //operatory: P + P, P - P, P * ld, P / ld
 ld sq_dist(P a, P b) {
@@ -12,6 +12,9 @@ circle opisany(P A, P B, P C) {
 	ld a = sq_dist(B, C);
 	ld b = sq_dist(C, A);
 	ld c = sq_dist(A, B);
+	if (a < eps) return diam(A, B); //Te ify są potrzebne
+	if (b < eps) return diam(B, C); //tylko jak dwa punkty mogą
+	if (c < eps) return diam(C, A); //się (prawie) pokrywać
 	ld u = a * (b + c - a);
 	ld v = b * (c + a - b);
 	ld w = c * (a + b - c);
@@ -24,7 +27,6 @@ circle opisany(P A, P B, P C) {
 	P O = (A * u + B * v + C * w) / (u + v + w);
 	return {O, sq_dist(O, A)};
 }
-const ld eps = 1e-10;
 bool inside(circle a, P b) {
 	return sq_dist(a.first, b) < a.second + eps;
 }
