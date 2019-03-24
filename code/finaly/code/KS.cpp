@@ -62,7 +62,7 @@ void ksSuffixArray(const vi& src, vi& dest, int N, int K){
         while (p < n0) {
           dest[k] = dest0[p]; k++; p++;
         }
-      }
+      } /* end if */
     } else {
       dest[k] = j; p++;
       if (p == n0) {
