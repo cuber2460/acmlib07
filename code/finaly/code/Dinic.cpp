@@ -1,5 +1,5 @@
 using T = long long;
-class Flow {
+struct Flow {
   struct E {
     int dest;
     T orig, *lim, *rev;
