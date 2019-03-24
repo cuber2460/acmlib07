@@ -1,4 +1,3 @@
-using ll=long long;
 struct MinCost {
 	struct kra {
 		int cel, *prze1, *prze2;
