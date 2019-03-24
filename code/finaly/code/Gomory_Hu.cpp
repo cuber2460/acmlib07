@@ -1,4 +1,4 @@
-#define int long long//jeśli long longi potrzebne
+#define int ll//jeśli long longi potrzebne
 struct GomoryHu {
   vector<vector< pair<int,int> >> graph, tree;
   vector<vector<int>> nodes;
