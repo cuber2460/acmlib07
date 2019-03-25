@@ -65,8 +65,3 @@ pii cornacchia(int p, int d) {//dla p pierwszego, znajduje a, b: p = a^2 + db^2
 	if (cc * cc != c) return {-1, -1};
 	return {b, cc};
 }
-bool is_prime(int p) {
-	for (int i = 2; i * i <= p; ++i)
-		if (p % i == 0) return false;
-	return true;
-}
