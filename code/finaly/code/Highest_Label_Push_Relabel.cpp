@@ -50,7 +50,6 @@ public:
 	HighestLabelPushRelabel(int N) : N(N), E(0), G(N), que(N), list(N), dlist(N) {}
 	TotalCapType maximum_flow(int s, int t) {
 		if (s == t) return 0;
-		//~ fprintf(stderr, "%d %d\n", N, E);
 		highest_active = 0; // highest label (active)
 		highest = 0; // highest label (active and inactive)
 		height.assign(N, 0); height[s] = N;
@@ -89,7 +88,6 @@ private:
 					que[qt++] = e.to;
 				}
 		}
-		// cache
 		list.clear(); dlist.clear();
 		for (int u = 0; u < N; ++u) if (height[u] < N) {
 				dlist.insert(height[u], u);
