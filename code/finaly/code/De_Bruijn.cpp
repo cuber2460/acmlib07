@@ -1,5 +1,4 @@
-//Generuje cykliczne słowo De Bruijn'a zawierające wszystkie podsłowa długości len nad alfabetem [0, alph)
-//Działa dla alph >= 2
+//Generuje słowo cykliczne, Działa dla alph >= 2
 vector <int> de_bruijn(int len, int alph){
 	vector <int> res, lyn{0};
 	while (lyn[0] != alph - 1){
