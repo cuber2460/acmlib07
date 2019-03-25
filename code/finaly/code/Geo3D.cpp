@@ -273,7 +273,7 @@ CircleS From2(P3 a, P3 b) { // neither the same nor the opposite
 LD SphAngle(P3 A, P3 B, P3 C) { // angle at A, no two points opposite
   LD a = B.DotProd(C);
   LD b = C.DotProd(A);
-  LD c = A.DotProd(A);
+  LD c = A.DotProd(B);
   return acos((b - a * c) / sqrt((1 - Sq(a)) * (1 - Sq(c))));
 }
 LD TriangleArea(P3 A, P3 B, P3 C) { // no two poins opposite
