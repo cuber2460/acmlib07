@@ -219,7 +219,6 @@ int tangent(P o, const vector <P> &poly, bool dir) {
 	}
 	return ans;
 }
-//Zwraca punkt X minimalizujący |XA| + |XB| + |XC| (punkt Fermata)
 P fermat(P A, P B, P C) {
 	static const ld dwa3 = 2 * sqrt(3);
 	ld a = sq_dist(B, C);
@@ -234,7 +233,6 @@ P fermat(P A, P B, P C) {
 	if (u < 0 && v < 0) return C;
 	return (A * u + B * v + C * w) / (u + v + w);
 }
-//Zwraca środek okręgu opisanego
 P opisany(P A, P B, P C) {
 	ld a = sq_dist(B, C);
 	ld b = sq_dist(C, A);
