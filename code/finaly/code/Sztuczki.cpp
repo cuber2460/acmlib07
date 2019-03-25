@@ -70,3 +70,11 @@ struct zet_p {
 ccy(+) ccy(-) ccy(*) ccy(/)
 sim> bool operator == (c a, zet_p b) {return zet_p(a) == b;}
 loc(muu & operator<<(muu & d, zet_p y) {return d << "<" << y.get() << "=" << y.w << ">";})
+using unt = unsigned int;
+inline unt ros(unt m) {//Kolejna maska mająca tyle samo zapalonych bitów
+	unt a = m & -m;
+	unt b = ~((a - 1) ^ m);
+	unt c = b & -b;
+	unt d = (c >> (1 + __builtin_ctz(a))) - 1;
+	return c | (m & ~(c - 1)) | d;
+}
