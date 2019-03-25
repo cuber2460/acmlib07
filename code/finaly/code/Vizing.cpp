@@ -15,9 +15,9 @@ struct Vizing {
     adj[v].emplace_back(v, M);
     edges[make_pair(min(u, v), max(u, v))] = M;
     ++M;
-  }
- 
-  int MaxDegree() const {
+  }                                     //numeracja od zera
+                                        //multikrawędzie niebezpieczne
+  int MaxDegree() const {               //ogólnie nietestowane
     int answer = 0;
     for (int i = 0; i < N; ++i)
       answer=max(answer, (int)adj[i].size());
