@@ -11,7 +11,6 @@
 // 1 - punkt wewnetrzny sciany
 // 2 - punkt wewnatrz krawedzi
 // 3 i wiecej - wierzcholek
-const int N = 1000;
 int n;
 struct sciana {
   int t[3]; // numery wierzcholkow sciany
@@ -104,7 +103,6 @@ void CH3D() { // n>=3, oblicza wektor trojkatnych scian v (mozliwe powtorzenia)
 /****************** wszystko ponizej jest opcjonalne ******************************/
 double area() {
   double res = 0.0;
-  debug() << imie(v.size());
   REP(i, v.size()) {
     P3 normal = ((p[v[i].t[1]] - p[v[i].t[0]]) ^ (p[v[i].t[2]] - p[v[i].t[0]]));
     res += normal.norm();
@@ -115,10 +113,9 @@ double volume() {
   double res = 0.0; 
   REP(i, v.size()) {
     res += p[v[i].t[0]].mno(p[v[i].t[1]], p[v[i].t[2]]);
-    debug() << imie((double)p[v[i].t[0]].mno(p[v[i].t[1]], p[v[i].t[2]]));
     //~ P3 normal=((p[v[i].t[1]]-p[v[i].t[0]])^(p[v[i].t[2]]-p[v[i].t[0]]));
     //~ double
-    //foo=(double)normal.x*normal.x+(double)normal.y*normal.y+(double)normal.z*normal.z;
+    //~ foo=(double)normal.x*normal.x+(double)normal.y*normal.y+(double)normal.z*normal.z;
     //~ foo=sqrt(foo);
     //~ res+=foo;
   }
@@ -157,24 +154,15 @@ void sort_walls() { // najpierw odpal compute_walls()
     sort(w.begin(), w.end(), CHcomp);
   }
 }
-void show() {
-  cout << "Sciany trojkatne:" << endl;
-  for (sciana i : v) cout << p[i.t[0]] << ' ' << p[i.t[1]] << ' ' << p[i.t[2]] << endl;
-  REP(i, n) cout << p[i] << " " << klas[i] << endl; // klasyfikacja
-  for (auto pa : mapa) { cout << pa.first << ": "; // sciany
-    for (int x : pa.second) cout << p[x] << " "; cout << endl;
-  }
-  printf("%6lf %6lf\n", area(), volume());
-}
 void test_case() {
   cin >> n;
   klas = vector<int>(n);
   p.clear(); p.resize(n);
   t = vector<vector<int>>(n, vector<int>(n));
   REP(i, n) p[i].read();
-  // random_shuffle(p.begin(),p.end());
+  // random_shuffle(p.begin(), p.end());
   CH3D();
-  compute_walls(); sort_walls(); show();
+  compute_walls(); sort_walls();
   pocz = 0;
   mapa.clear(); v.clear();
 }
