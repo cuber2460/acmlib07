@@ -6,8 +6,7 @@ void dfs1(int v) {
 	if (bylo[v])
 		return;
 	bylo[v]=1;
-	for (int i : graf[v])
-		dfs1(i);
+	for (int i : graf[v]) dfs1(i);
 	coudfs--;
 	post[coudfs]=v;
 }
@@ -15,12 +14,10 @@ void dfs2(int v, int s) {
 	if (spo[v]>=0)
 		return;
 	spo[v]=s;
-	for (int i : farg[v])
-		dfs2(i, s);
+	for (int i : farg[v]) dfs2(i, s);
 }
 void rek(int l, int r, vector <pair<pair<int,int>,int>> &kra) {
-	if (l>r)
-		return;
+	if (l>r) return;
 	counter++;
 	vector <int> ver;
 	for (auto i : kra) {
@@ -34,10 +31,8 @@ void rek(int l, int r, vector <pair<pair<int,int>,int>> &kra) {
 		}
 	}
 	for (int i : ver) {
-		bylo[i]=0;
-		spo[i]=-1;
-		graf[i].clear();
-		farg[i].clear();
+		bylo[i]=0; spo[i]=-1;
+		graf[i].clear(); farg[i].clear();
 	}
 	int s=(l+r)>>1;
 	for (auto i : kra) {
@@ -61,11 +56,9 @@ void rek(int l, int r, vector <pair<pair<int,int>,int>> &kra) {
 		else
 			pra.push_back({{spo[i.first.first],spo[i.first.second]}, i.second});
 	}
-	rek(l, s-1, lew);
-	rek(s+1, r, pra);
+	rek(l, s-1, lew); rek(s+1, r, pra);
 }
-void sss(vector <pair<int,int>> kra)
-{
+void sss(vector <pair<int,int>> kra) {
 	mer.clear();
 	mer.resize(kra.size());
 	vector <pair<pair<int,int>,int>>daj;
