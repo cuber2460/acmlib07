@@ -54,7 +54,7 @@ void step(int x) {
       if ((normal.dot((p[v[i].t[1]] - p[v[i].t[0]]) ^ (p[x] - p[v[i].t[0]])) >= 0 &&
            normal.dot((p[v[i].t[2]] - p[v[i].t[1]]) ^ (p[x] - p[v[i].t[1]])) >= 0 &&
            normal.dot((p[v[i].t[0]] - p[v[i].t[2]]) ^ (p[x] - p[v[i].t[2]])) >= 0))
-        //~ return; /*ODKOMENTUJ*/
+        //~ return; /*ODKOMENTUJ jeżeli nie chcesz śmieci na otoczce */
         vis[i] = true;
     }
   }
