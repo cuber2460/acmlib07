@@ -14,7 +14,7 @@ struct SPFA{
     for(int ak:d2[nr]){
       if(oj[ak] == nr){
         if(us(ak)){
-          cykl.push_back(nr);
+          cykl.push_back(nr);                  //numeracja od zera
           return 1;
         }
       }
