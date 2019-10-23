@@ -187,11 +187,12 @@ ld vec(P a, P b, P c) {
 }
 //Zwraca i takie, że prosta o-poly[i] jest "styczna"
 //Jeśli o jest wewnątrz wielokąta, to zwróci nieokreślony punkt
-//Jeśli dir = true, to cały wielokąt leży na lewo od prostej o-poly[i]
+//Jeśli dir = true, to cały wielokąt leży na prawo od prostej o-poly[i]
 //jeśli false, to na lewo niezależnie, czy poly jest clockwise, czy nie
 int tangent(P o, const vector <P> &poly, bool dir) {
+	if (poly.size() == 1u) return 0;
+	assert(!poly.empty());
 	int mul = dir ? 1 : -1;
-	assert(poly.size() >= 3u);
 	int n = poly.size();
 	int ans = 0;
 	int low = 0, high = n - 1;
@@ -209,7 +210,7 @@ int tangent(P o, const vector <P> &poly, bool dir) {
 	else {
 		while (low <= high) {
 			int med = (low + high) / 2;
-			if (mul * vec(o, poly[med], poly[(med + 1) % n]) < 0 && mul * vec(o, poly[0], poly[med]) >= 0) {
+			if (mul * vec(o, poly[med], poly[(med + 1) % n]) < 0 && mul * vec(o, poly[0], poly[med]) > 0) {
 				ans = med;
 				high = med - 1;
 			}
@@ -217,6 +218,10 @@ int tangent(P o, const vector <P> &poly, bool dir) {
 				low = med + 1;
 		}
 	}
+	if (on_seg(poly[ans], get(poly, ans + 1), o))
+		ans = (ans + 1) % poly.size();
+	if (on_seg(poly[ans], get(poly, ans - 1), o))
+		ans = (ans + poly.size() - 1) % poly.size();
 	return ans;
 }
 P fermat(P A, P B, P C) {
